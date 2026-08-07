@@ -1,0 +1,29 @@
+# Dependency directories (THE MOST IMPORTANT LINE)
+node_modules/
+jspm_packages/
+web_modules/
+
+# Logs and Debugging
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.nyc_output
+
+# Environment Secrets (Crucial)
+.env
+.env.*.local
+.env.local
+
+# Build and Coverage
+dist
+build/
+coverage/
+.cache/
+
+# OS/Editor
+.DS_Store
+.vscode/
+.idea/

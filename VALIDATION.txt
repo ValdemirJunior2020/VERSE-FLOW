@@ -1,0 +1,14 @@
+VerseFlow V1 validation notes
+
+Checks completed in the build workspace:
+- package.json parses as valid JSON.
+- sample Bible JSON parses as valid JSON.
+- electron/main.cjs passes node --check.
+- electron/preload.cjs passes node --check.
+- electron/db.cjs passes node --check.
+- TypeScript/TSX parser check returned no code diagnostics after excluding missing dependency/type errors.
+- Public npm installation could not be executed in this workspace because the environment forces an internal npm mirror that returned 404 for React type packages.
+
+The included INSTALL_VERSEFLOW.bat intentionally configures npm to https://registry.npmjs.org/,
+downloads Node.js 22 LTS from https://nodejs.org/dist/, runs npm install, runs npm test,
+and stops before packaging if the tests fail.
