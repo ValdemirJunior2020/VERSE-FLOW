@@ -1,0 +1,1 @@
+The uploaded project ZIP did not contain a .git directory. Existing .gitignore and project layout were preserved. This update only changes Bible catalog/documentation files and uses the existing Bible import/download code.

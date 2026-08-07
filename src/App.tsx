@@ -5,7 +5,7 @@ import CanvasPreview from './components/CanvasPreview'
 import OutputRenderer from './components/OutputRenderer'
 import { defaultTheme, itemToPresentation, verseToServiceItem } from './presentation'
 import { useVerseFlowData } from './hooks/useVerseFlowData'
-import type { BibleTranslation, DisplayInfo, MediaItem, ModuleKey, PresentationState, ServiceItem, Song, Theme, Verse } from './types'
+import type { BibleCatalogItem, BibleTranslation, DisplayInfo, MediaItem, ModuleKey, PresentationState, ServiceItem, Song, Theme, Verse } from './types'
 
 const params = new URLSearchParams(location.search)
 const mode = params.get('mode')
@@ -15,18 +15,38 @@ if (mode === 'audience' || mode === 'stage') {
 
 function uid(prefix='id') { return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2,8)}` }
 
-function ScriptureBrowser({verses,translations,onPreview,onAdd,onImport}:{verses:Verse[];translations:BibleTranslation[];onPreview:(v:Verse)=>void;onAdd:(v:Verse)=>void;onImport:()=>void}) {
+function ScriptureBrowser({verses,translations,onPreview,onAdd,onImport,onInstalled}:{verses:Verse[];translations:BibleTranslation[];onPreview:(v:Verse)=>void;onAdd:(v:Verse)=>void;onImport:()=>void;onInstalled:()=>void}) {
   const [q,setQ]=useState('John 3')
   const [translation,setTranslation]=useState(translations[0]?.code||'WEB')
+  const [catalog,setCatalog]=useState<BibleCatalogItem[]>([])
+  const [busy,setBusy]=useState('')
+  const [catalogOpen,setCatalogOpen]=useState(false)
+  useEffect(()=>{window.verseflow?.getBibleCatalog().then(setCatalog)},[])
   useEffect(()=>{if(translations.length&&!translations.some(t=>t.code===translation))setTranslation(translations[0].code)},[translations])
   const filtered=useMemo(()=> {
     const x=q.trim().toLowerCase()
     return verses.filter(v=>v.translation===translation && (!x||`${v.book} ${v.chapter}:${v.verse} ${v.text}`.toLowerCase().includes(x)))
   },[q,verses,translation])
+  const installed=new Set(translations.map(t=>t.code))
+  const install=async(item:BibleCatalogItem)=>{
+    if(item.status==='import'){onImport();return}
+    setBusy(item.code)
+    const r=await window.verseflow?.installBibleFromCatalog(item.code)
+    setBusy('')
+    if(r?.ok){await onInstalled();setTranslation(item.code)}
+    else alert(r?.error||'Bible install failed')
+  }
   return <div className="browser-panel">
     <div className="panel-title">Bible</div>
     <label className="search-field"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="John 3:16 or words"/></label>
-    <div className="tiny-row"><select value={translation} onChange={e=>setTranslation(e.target.value)}>{translations.map(t=><option value={t.code} key={t.code}>{t.code} · {t.name}</option>)}</select><button className="ghost" onClick={onImport}>Import</button></div>
+    <div className="tiny-row"><select value={translation} onChange={e=>setTranslation(e.target.value)}>{translations.map(t=><option value={t.code} key={t.code}>{t.code} · {t.name}</option>)}</select><button className="ghost" onClick={()=>setCatalogOpen(v=>!v)}>Bibles</button></div>
+    {catalogOpen&&<div className="bible-catalog">
+      <div className="catalog-head"><strong>Bible Library</strong><button onClick={onImport}>Import JSON</button></div>
+      {catalog.map(item=><div className="catalog-row" key={item.code}>
+        <div><strong>{item.code}</strong><span>{item.name}</span><small>{item.language} · {item.license}</small></div>
+        {installed.has(item.code)?<span className="installed-badge">Installed</span>:<button disabled={busy===item.code} onClick={()=>install(item)}>{busy===item.code?'Installing…':item.status==='download'?'Install':'Import'}</button>}
+      </div>)}
+    </div>}
     <div className="verse-list">{filtered.map(v=><article key={v.id} onClick={()=>onPreview(v)}>
       <div><strong>{v.book} {v.chapter}:{v.verse}</strong><span>{v.translation}</span></div>
       <p>{v.text}</p>
@@ -57,11 +77,11 @@ function Dashboard({go,data}:{go:(m:ModuleKey)=>void;data:any}) {
 }
 function ListMusicIcon(){return <span className="feature-icon">☷</span>}
 
-function BiblePage({verses,translations,onPreview,onAdd,onLive,onImport,state,setState,themes,items}:{verses:Verse[];translations:BibleTranslation[];onPreview:(v:Verse)=>void;onAdd:(v:Verse)=>void;onLive:(v:Verse)=>void;onImport:()=>void;state:PresentationState;setState:(s:PresentationState)=>void;themes:Theme[];items:ServiceItem[]}) {
+function BiblePage({verses,translations,onPreview,onAdd,onLive,onImport,onInstalled,state,setState,themes,items}:{verses:Verse[];translations:BibleTranslation[];onPreview:(v:Verse)=>void;onAdd:(v:Verse)=>void;onLive:(v:Verse)=>void;onImport:()=>void;onInstalled:()=>void;state:PresentationState;setState:(s:PresentationState)=>void;themes:Theme[];items:ServiceItem[]}) {
   const [selected,setSelected]=useState<Verse|undefined>(verses[0])
   const preview=(v:Verse)=>{setSelected(v);onPreview(v)}
   return <div className="editor-layout">
-    <ScriptureBrowser verses={verses} translations={translations} onPreview={preview} onAdd={onAdd} onImport={onImport}/>
+    <ScriptureBrowser verses={verses} translations={translations} onPreview={preview} onAdd={onAdd} onImport={onImport} onInstalled={onInstalled}/>
     <section className="editor-center">
       <div className="editor-heading"><div><span className="eyebrow">SLIDE EDITOR</span><strong>{selected?`${selected.book} ${selected.chapter}:${selected.verse}`:'Scripture preview'}</strong></div><div className="detail-actions">{selected&&<><button onClick={()=>onAdd(selected)}>Add to Service</button><button className="gold" onClick={()=>onLive(selected)}>Send Live</button></>}</div></div>
       <CanvasPreview state={state} live={state.mode==='live'}/>
@@ -200,7 +220,7 @@ export default function App() {
       <header className="topbar"><div className="global-search"><Search size={16}/><input placeholder="Search Bible, songs, media…"/></div><button><CirclePlus size={16}/> New Slide</button><button><Import size={16}/> Import</button><button><Undo2 size={16}/></button><div className="top-spacer"/><span className="offline"><WifiOff size={14}/> Offline-first</span><button className="present-top" onClick={()=>setActive('present')}><Monitor size={16}/> Present</button><span className={state.mode==='live'?'live-badge':'ready-badge'}>{state.mode==='live'?'LIVE':'READY'}</span><span className="clock"><Clock3 size={14}/>{new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></header>
       <div className="workspace">
         {active==='dashboard'&&<Dashboard go={setActive} data={data}/>}
-        {active==='bible'&&<BiblePage verses={data.verses} translations={data.translations} onPreview={previewVerse} onAdd={v=>addItem(verseToServiceItem(v))} onLive={liveVerse} onImport={async()=>{const r=await window.verseflow?.importBible();if(r?.ok){await reload();setToast(`${r.translation}: ${r.imported} verses imported`)}else if(r?.error!=='Canceled')setToast(r?.error||'Import failed')}} state={state} setState={setState} themes={themes} items={items}/>}
+        {active==='bible'&&<BiblePage verses={data.verses} translations={data.translations} onPreview={previewVerse} onAdd={v=>addItem(verseToServiceItem(v))} onLive={liveVerse} onImport={async()=>{const r=await window.verseflow?.importBible();if(r?.ok){await reload();setToast(`${r.translation}: ${r.imported} verses imported`)}else if(r?.error!=='Canceled')setToast(r?.error||'Import failed')}} onInstalled={async()=>{await reload();setToast('Bible installed and ready offline')}} state={state} setState={setState} themes={themes} items={items}/>}
         {active==='songs'&&<SongsPage songs={data.songs} onSave={saveSong} onAdd={addSong}/>}
         {active==='media'&&<MediaPage media={data.media} onImport={importMedia} onAdd={addMedia}/>}
         {active==='playlists'&&<PlaylistPage items={items} setItems={setItems} onSelect={previewItem} onLive={liveAt} onSave={async(name,list)=>{const service={id:uid('service'),title:name,date:new Date().toISOString(),items:list};await window.verseflow?.upsert('services',service);await reload();setToast('Service saved')}}/>}

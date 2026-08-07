@@ -1,0 +1,227 @@
+[
+  {
+    "abbreviation": "KJV",
+    "full_name": "King James Version (Authorized Version)",
+    "year": "1611 (standard text often 1769)",
+    "description": "Classic formal English translation; the most widely recognized historic English Bible.",
+    "license": "Public Domain (United States)",
+    "notes": "Crown copyright still applies in the United Kingdom.",
+    "language": "English"
+  },
+  {
+    "abbreviation": "ASV",
+    "full_name": "American Standard Version",
+    "year": "1901",
+    "description": "Literal revision of the Revised Version / KJV tradition; highly formal equivalence.",
+    "license": "Public Domain",
+    "notes": "",
+    "language": "English"
+  },
+  {
+    "abbreviation": "WEB",
+    "full_name": "World English Bible",
+    "year": "1997–present (ongoing updates)",
+    "description": "Modern English translation intentionally placed in the public domain; based on ASV with updated language and majority text NT.",
+    "license": "Public Domain",
+    "notes": "Also available in British Edition (WEBBE) and Catholic Edition.",
+    "language": "English"
+  },
+  {
+    "abbreviation": "BBE",
+    "full_name": "Bible in Basic English",
+    "year": "1949 (OT) / 1964 (complete)",
+    "description": "Translation using a limited vocabulary of about 850–1,000 Basic English words for accessibility.",
+    "license": "Public Domain (United States)",
+    "notes": "",
+    "language": "English"
+  },
+  {
+    "abbreviation": "YLT",
+    "full_name": "Young's Literal Translation",
+    "year": "1862 / 1898",
+    "description": "Extremely literal, word-for-word English rendering of the original languages.",
+    "license": "Public Domain",
+    "notes": "",
+    "language": "English"
+  },
+  {
+    "abbreviation": "DARBY",
+    "full_name": "Darby Translation (J.N. Darby)",
+    "year": "1871 / 1884 / 1890",
+    "description": "Literal translation by John Nelson Darby with careful attention to original languages.",
+    "license": "Public Domain",
+    "notes": "",
+    "language": "English"
+  },
+  {
+    "abbreviation": "DRA",
+    "full_name": "Douay-Rheims Bible (Challoner Revision)",
+    "year": "1899 American Edition (based on earlier Challoner)",
+    "description": "Traditional Catholic English translation from the Latin Vulgate.",
+    "license": "Public Domain",
+    "notes": "Also known as DRV or Douay-Rheims.",
+    "language": "English"
+  },
+  {
+    "abbreviation": "WBT",
+    "full_name": "Webster's Bible (Noah Webster)",
+    "year": "1833",
+    "description": "Revision of the KJV with updated spelling, grammar, and some vocabulary modernization.",
+    "license": "Public Domain",
+    "notes": "",
+    "language": "English"
+  },
+  {
+    "abbreviation": "OEB",
+    "full_name": "Open English Bible",
+    "year": "Ongoing (US and Commonwealth editions)",
+    "description": "Modern public-domain translation aiming for clear contemporary English.",
+    "license": "Public Domain",
+    "notes": "Available in US and Commonwealth (British) spelling editions.",
+    "language": "English"
+  },
+  {
+    "abbreviation": "Geneva",
+    "full_name": "Geneva Bible",
+    "year": "1560 / 1599",
+    "description": "Influential 16th-century Protestant translation with study notes; preceded the KJV.",
+    "license": "Public Domain",
+    "notes": "1599 edition is commonly referenced.",
+    "language": "English"
+  },
+  {
+    "abbreviation": "RV",
+    "full_name": "Revised Version (English Revised Version)",
+    "year": "1881 (NT) / 1885 (complete)",
+    "description": "British revision of the KJV; basis for the later American Standard Version.",
+    "license": "Public Domain",
+    "notes": "",
+    "language": "English"
+  },
+  {
+    "abbreviation": "CPDV",
+    "full_name": "Catholic Public Domain Version",
+    "year": "2009",
+    "description": "Modern English translation of the Latin Vulgate placed in the public domain.",
+    "license": "Public Domain",
+    "notes": "",
+    "language": "English"
+  },
+  {
+    "abbreviation": "AKJV",
+    "full_name": "American King James Version",
+    "year": "1999",
+    "description": "Modernized spelling and grammar update of the KJV while retaining much of the original wording.",
+    "license": "Public Domain",
+    "notes": "",
+    "language": "English"
+  },
+  {
+    "abbreviation": "WMB",
+    "full_name": "World Messianic Bible (formerly Hebrew Names Version)",
+    "year": "1997–present",
+    "description": "Based on the World English Bible with Hebrew-style names and Messianic emphasis.",
+    "license": "Public Domain",
+    "notes": "",
+    "language": "English"
+  },
+  {
+    "abbreviation": "Brenton",
+    "full_name": "Brenton English Septuagint",
+    "year": "1851",
+    "description": "English translation of the Greek Septuagint (LXX) Old Testament.",
+    "license": "Public Domain",
+    "notes": "Updated editions also exist in the public domain.",
+    "language": "English"
+  },
+  {
+    "abbreviation": "JPS",
+    "full_name": "Jewish Publication Society Tanakh (1917)",
+    "year": "1917",
+    "description": "Classic Jewish English translation of the Hebrew Bible (Old Testament).",
+    "license": "Public Domain",
+    "notes": "Often called JPS 1917 or Tanakh 1917.",
+    "language": "English"
+  },
+  {
+    "abbreviation": "Tyndale",
+    "full_name": "Tyndale New Testament / Bible portions",
+    "year": "1526 (NT) / later portions",
+    "description": "William Tyndale’s pioneering English translation; foundation for later English Bibles including the KJV.",
+    "license": "Public Domain",
+    "notes": "Complete Bible portions available; full modern reconstruction sometimes compiled.",
+    "language": "English"
+  },
+  {
+    "abbreviation": "Coverdale",
+    "full_name": "Coverdale Bible",
+    "year": "1535",
+    "description": "First complete printed English Bible; largely based on Tyndale and other sources.",
+    "license": "Public Domain",
+    "notes": "",
+    "language": "English"
+  },
+  {
+    "abbreviation": "Bishops",
+    "full_name": "Bishops' Bible",
+    "year": "1568",
+    "description": "Official Church of England translation that preceded the King James Version.",
+    "license": "Public Domain",
+    "notes": "",
+    "language": "English"
+  },
+  {
+    "abbreviation": "BSB",
+    "full_name": "Berean Standard Bible",
+    "year": "2020 / 2022–2023 (updates)",
+    "description": "Modern, readable, formal-equivalence translation released into the public domain (CC0).",
+    "license": "Public Domain (CC0)",
+    "notes": "Also known as Berean Study Bible in some earlier forms; freely usable.",
+    "language": "English"
+  },
+  {
+    "abbreviation": "ALMEIDA",
+    "full_name": "João Ferreira de Almeida (Edição Clássica / Original)",
+    "year": "1681 (NT) / 1753 (completa) / edições posteriores até séc. XIX",
+    "description": "Primeira tradução completa da Bíblia em português, iniciada por João Ferreira de Almeida. Baseada no Textus Receptus e textos hebraicos.",
+    "license": "Public Domain",
+    "notes": "Edições antigas (pré-1923) estão em domínio público nos EUA e em muitos países.",
+    "language": "Portuguese"
+  },
+  {
+    "abbreviation": "ALMEIDA-1819",
+    "full_name": "Almeida 1819 (Sociedade Bíblica Britânica e Estrangeira)",
+    "year": "1819",
+    "description": "Edição em volume único da tradução de Almeida publicada pela British and Foreign Bible Society.",
+    "license": "Public Domain",
+    "notes": "Disponível em Project Gutenberg e arquivos históricos.",
+    "language": "Portuguese"
+  },
+  {
+    "abbreviation": "ALM1911",
+    "full_name": "Almeida 1911",
+    "year": "1911",
+    "description": "Edição histórica da tradução de Almeida de 1911.",
+    "license": "Public Domain",
+    "notes": "Marcada como domínio público em repositórios abertos de Bíblias em português.",
+    "language": "Portuguese"
+  },
+  {
+    "abbreviation": "TB",
+    "full_name": "Traduçao Brasileira (edição antiga)",
+    "year": "1917 (principal) / revisões iniciais",
+    "description": "Tradução brasileira do início do século XX, baseada em textos originais com linguagem da época.",
+    "license": "Public Domain (edições antigas nos EUA)",
+    "notes": "Edições anteriores a 1923 estão em domínio público nos Estados Unidos.",
+    "language": "Portuguese"
+  },
+  {
+    "abbreviation": "BLIVRE",
+    "full_name": "Bíblia Livre",
+    "year": "2018 (projeto contínuo)",
+    "description": "Tradução moderna em português de uso livre, criada para ser redistribuída sem restrições.",
+    "license": "Public Domain / Livre",
+    "notes": "Projeto aberto destinado a uso livre em aplicações e redistribuição.",
+    "language": "Portuguese"
+  }
+]

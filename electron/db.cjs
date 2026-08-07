@@ -73,21 +73,93 @@ class VerseFlowDb {
     }
   }
 
-  importTranslation(payload){
+
+  normalizeTranslationPayload(payload, forcedMeta={}){
     if(!payload||typeof payload!=='object') throw new Error('Bible JSON must be an object.')
-    const code=String(payload.translation||'').trim().toUpperCase()
-    const name=String(payload.name||code).trim()
-    const license=String(payload.license||'').trim()
-    const verses=Array.isArray(payload.verses)?payload.verses:[]
+
+    // VerseFlow native format.
+    if(Array.isArray(payload.verses) && payload.verses.length && payload.verses[0]?.book){
+      return {
+        translation:String(forcedMeta.code||payload.translation||'').trim().toUpperCase(),
+        name:String(forcedMeta.name||payload.name||payload.translation||'').trim(),
+        license:String(forcedMeta.license||payload.license||'Imported local translation').trim(),
+        verses:payload.verses.map(v=>({
+          book:String(v.book||'').trim(),
+          chapter:Number(v.chapter),
+          verse:Number(v.verse),
+          text:String(v.text||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim()
+        }))
+      }
+    }
+
+    // GetBible v2 format: {translation, books:[{name, chapters:[{chapter, verses:[...]}]}]}
+    if(Array.isArray(payload.books)){
+      const out=[]
+      for(const b of payload.books){
+        const book=String(b.name||b.book||b.book_name||'').trim()
+        const chapters=Array.isArray(b.chapters)?b.chapters:[]
+        for(const c of chapters){
+          const chapter=Number(c.chapter||c.nr||c.number)
+          const verses=Array.isArray(c.verses)?c.verses:[]
+          for(const v of verses){
+            out.push({
+              book,
+              chapter:Number(v.chapter||chapter),
+              verse:Number(v.verse||v.nr||v.number),
+              text:String(v.text||v.verse_text||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim()
+            })
+          }
+        }
+      }
+      return {
+        translation:String(forcedMeta.code||payload.abbreviation||payload.translation||'').trim().toUpperCase(),
+        name:String(forcedMeta.name||payload.translation||payload.name||'').trim(),
+        license:String(forcedMeta.license||payload.distribution_license||payload.license||'Imported translation').trim(),
+        verses:out
+      }
+    }
+
+    // Common array formats.
+    if(Array.isArray(payload)){
+      const out=[]
+      for(const row of payload){
+        if(row && typeof row==='object'){
+          const book=String(row.book||row.book_name||row.name||'').trim()
+          const chapter=Number(row.chapter||row.chapter_nr||row.chapterNumber)
+          const verse=Number(row.verse||row.verse_nr||row.verseNumber)
+          const text=String(row.text||row.verse_text||row.content||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim()
+          if(book && chapter && verse && text) out.push({book,chapter,verse,text})
+        }
+      }
+      if(out.length){
+        return {
+          translation:String(forcedMeta.code||'IMPORTED').trim().toUpperCase(),
+          name:String(forcedMeta.name||forcedMeta.code||'Imported Bible').trim(),
+          license:String(forcedMeta.license||'Imported local translation').trim(),
+          verses:out
+        }
+      }
+    }
+
+    throw new Error('Unsupported Bible JSON structure. Use VerseFlow JSON or GetBible v2 JSON.')
+  }
+
+  importTranslation(payload, forcedMeta={}){
+    const normalized=this.normalizeTranslationPayload(payload,forcedMeta)
+    const code=String(normalized.translation||'').trim().toUpperCase()
+    const name=String(normalized.name||code).trim()
+    const license=String(normalized.license||'').trim()
+    const verses=Array.isArray(normalized.verses)?normalized.verses:[]
     if(!code||code.length>24) throw new Error('Missing or invalid translation code.')
-    if(!license) throw new Error('A license/public-domain note is required.')
-    if(!verses.length) throw new Error('No verses were found in this JSON file.')
+    if(!license) throw new Error('A license/source note is required.')
+    if(!verses.length) throw new Error('No verses were found in this Bible file.')
     const seen=new Set(), clean=[]
     for(const v of verses){
       const book=String(v.book||'').trim(), chapter=Number(v.chapter), verse=Number(v.verse), text=String(v.text||'').trim()
-      if(!book||!Number.isInteger(chapter)||chapter<1||!Number.isInteger(verse)||verse<1||!text) throw new Error('Every verse needs book, positive chapter/verse numbers, and text.')
-      const key=`${book.toLowerCase()}|${chapter}|${verse}`; if(seen.has(key)) throw new Error(`Duplicate verse: ${book} ${chapter}:${verse}`); seen.add(key); clean.push([code,book,chapter,verse,text])
+      if(!book||!Number.isInteger(chapter)||chapter<1||!Number.isInteger(verse)||verse<1||!text) continue
+      const key=`${book.toLowerCase()}|${chapter}|${verse}`; if(seen.has(key)) continue; seen.add(key); clean.push([code,book,chapter,verse,text])
     }
+    if(clean.length<100) throw new Error(`Only ${clean.length} valid verses were found. The file may not be a complete Bible.`)
     this.db.run('BEGIN')
     try{
       this.db.run('DELETE FROM verses WHERE translation=?',[code])

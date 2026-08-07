@@ -6,6 +6,9 @@ const https = require('https')
 const { pathToFileURL } = require('url')
 const { VerseFlowDb } = require('./db.cjs')
 
+const bibleCatalog = require('../src/data/bible-catalog.json')
+const bibleCatalogByCode = new Map(bibleCatalog.map(x => [String(x.code).toUpperCase(), x]))
+
 app.setAppUserModelId('com.verseflow.desktop')
 
 let controlWindow
@@ -61,6 +64,34 @@ async function createOutput(kind, displayId) {
 function broadcast(state) {
   for (const w of [audienceWindow,stageWindow]) if (w && !w.isDestroyed()) w.webContents.send('presentation:state',state)
 }
+
+function downloadJson(url, redirects=0) {
+  return new Promise((resolve,reject)=>{
+    if(redirects>5) return reject(new Error('Too many redirects.'))
+    const u=new URL(url)
+    if(u.protocol!=='https:') return reject(new Error('Bible catalog downloads require HTTPS.'))
+    const req=https.get(u,{headers:{'User-Agent':'VerseFlow/1.0'}},res=>{
+      if(res.statusCode>=300 && res.statusCode<400 && res.headers.location){
+        res.resume()
+        const next=new URL(res.headers.location,u).toString()
+        return resolve(downloadJson(next,redirects+1))
+      }
+      if(res.statusCode!==200){res.resume();return reject(new Error(`Bible source returned HTTP ${res.statusCode}.`))}
+      let body=''
+      res.setEncoding('utf8')
+      res.on('data',chunk=>{
+        body+=chunk
+        if(body.length>40*1024*1024){req.destroy(new Error('Bible file is unexpectedly large.'))}
+      })
+      res.on('end',()=>{
+        try{resolve(JSON.parse(body))}catch(e){reject(new Error('Bible source did not return valid JSON.'))}
+      })
+    })
+    req.setTimeout(30000,()=>req.destroy(new Error('Bible download timed out.')))
+    req.on('error',reject)
+  })
+}
+
 function entityId(value) {
   if (!value || typeof value!=='object') return null
   return value.id || value.key || null
@@ -101,6 +132,18 @@ ipcMain.handle('data:upsert',(_e,{entity,value})=>{
 ipcMain.handle('settings:set',(_e,{key,value})=>{try{if(typeof key!=='string'||key.length>80)throw new Error('Invalid setting key');db.setSetting(key,value);return{ok:true}}catch(e){return{ok:false,error:e.message}}})
 ipcMain.handle('data:remove',(_e,{entity,id})=>{
   try{if(!allowedEntities.has(entity))throw new Error('Entity not allowed');db.removeObject(entity,id);return{ok:true}}catch(e){return{ok:false,error:e.message}}
+})
+
+ipcMain.handle('bible:catalog',()=>bibleCatalog.map(x=>({...x})))
+ipcMain.handle('bible:install-catalog',async(_e,code)=>{
+  try{
+    const item=bibleCatalogByCode.get(String(code||'').toUpperCase())
+    if(!item) throw new Error('Bible catalog entry not found.')
+    if(item.status!=='download'||!item.url) throw new Error(`${item.code} requires a local Bible file. Use Import.`)
+    const payload=await downloadJson(item.url)
+    const result=db.importTranslation(payload,{code:item.code,name:item.name,license:`${item.license} · Source: ${item.source}`})
+    return{ok:true,...result}
+  }catch(e){return{ok:false,error:e.message}}
 })
 ipcMain.handle('bible:import',async()=>{
   try{

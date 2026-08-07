@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('verseflow', {
   getPresentationState: () => ipcRenderer.invoke('presentation:get'),
   pickMedia: () => ipcRenderer.invoke('media:pick'),
   importBible: () => ipcRenderer.invoke('bible:import'),
+  getBibleCatalog: () => ipcRenderer.invoke('bible:catalog'),
+  installBibleFromCatalog: (code) => ipcRenderer.invoke('bible:install-catalog', code),
   loadData: () => ipcRenderer.invoke('data:load'),
   upsert: (entity, value) => ipcRenderer.invoke('data:upsert', { entity, value }),
   saveSetting: (key, value) => ipcRenderer.invoke('settings:set', { key, value }),

@@ -85,6 +85,16 @@ export interface PresentationState {
 
 export interface BibleTranslation { code: string; name: string; license: string }
 
+export interface BibleCatalogItem {
+  code: string
+  name: string
+  language: string
+  status: 'download' | 'import'
+  license: string
+  source: string
+  url?: string
+}
+
 export interface AppData {
   verses: Verse[]
   translations: BibleTranslation[]
@@ -105,6 +115,8 @@ export interface VerseFlowApi {
   getPresentationState: () => Promise<PresentationState | null>
   pickMedia: () => Promise<MediaItem[]>
   importBible: () => Promise<{ ok: boolean; imported?: number; translation?: string; error?: string }>
+  getBibleCatalog: () => Promise<BibleCatalogItem[]>
+  installBibleFromCatalog: (code: string) => Promise<{ ok: boolean; imported?: number; translation?: string; error?: string }>
   loadData: () => Promise<AppData>
   upsert: (entity: string, value: unknown) => Promise<{ ok: boolean; error?: string }>
   saveSetting: (key: string, value: unknown) => Promise<{ ok: boolean; error?: string }>
