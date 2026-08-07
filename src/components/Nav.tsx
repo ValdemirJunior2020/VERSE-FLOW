@@ -7,7 +7,7 @@ const items: {key:ModuleKey; label:string; icon:any}[] = [
   {key:'songs',label:'Songs',icon:Music2},
   {key:'media',label:'Media',icon:Images},
   {key:'playlists',label:'Playlists',icon:ListMusic},
-  {key:'present',label:'Present',icon:MonitorPlay},
+  {key:'present',label:'Live Desk',icon:MonitorPlay},
   {key:'themes',label:'Themes',icon:Palette},
   {key:'settings',label:'Settings',icon:Settings},
 ]

@@ -69,3 +69,17 @@ ALM1911, TB and BLIVRE from `damarals/biblias`. After installation they are stor
 locally for offline presentation.
 
 See `docs/GITHUB_BIBLE_SOURCES.md`.
+
+
+## Free Live Mode
+
+VerseFlow no longer requires a service/playlist before presenting.
+
+Open **Live Desk** to:
+- type any custom text and send it live immediately
+- search any loaded Bible verse and press LIVE
+- click any imported image/video and send it live
+- use Black, Clear Text, Logo or Empty Screen at any time
+- change theme/properties without building a service
+
+Service Builder remains available as an optional workflow for planned Sundays.

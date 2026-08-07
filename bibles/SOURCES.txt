@@ -1,0 +1,14 @@
+Bible text sources used by VerseFlow
+
+English catalog/source repository:
+https://github.com/public-domain-bibles/english
+
+Reliable full-Bible JSON used for selected English automatic installs:
+https://getbible.net/
+https://api.getbible.net/v2/
+
+Portuguese repository:
+https://github.com/damarals/biblias
+
+Portuguese public-domain entries used for automatic install:
+ALM1911, TB, BLIVRE

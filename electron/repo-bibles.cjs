@@ -92,7 +92,7 @@ function parseEnglishBible(text, format) {
 }
 
 function flattenDamaralsBook(payload, bookCode){
-  const book=BOOKS[bookCode]||bookCode
+  const book=clean(payload?.name) || BOOKS[bookCode] || bookCode
   const out=[]
   const chapters = Array.isArray(payload) ? payload : (payload.chapters || payload.data || [])
   for(const ch of chapters){

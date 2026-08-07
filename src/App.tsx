@@ -70,7 +70,7 @@ function Inspector({state,setState,themes}:{state:PresentationState;setState:(s:
 
 function Dashboard({go,data}:{go:(m:ModuleKey)=>void;data:any}) {
   return <div className="page dashboard">
-    <div className="hero-card"><div><span className="eyebrow">SUNDAY READY</span><h1>Your service. One clean flow.</h1><p>Build the service offline, preview every slide, then send only approved content to the audience screen.</p><div className="hero-actions"><button className="gold" onClick={()=>go('playlists')}>Build Service</button><button onClick={()=>go('present')}>Open Present Mode</button></div></div><div className="hero-orb">VF</div></div>
+    <div className="hero-card"><div><span className="eyebrow">SUNDAY READY</span><h1>Your service. One clean flow.</h1><p>Build the service offline, preview every slide, then send only approved content to the audience screen.</p><div className="hero-actions"><button className="gold" onClick={()=>go('present')}>Open Live Desk</button><button onClick={()=>go('playlists')}>Build Service (optional)</button></div></div><div className="hero-orb">VF</div></div>
     <div className="stats"><div><span>Bible verses</span><strong>{data.verses.length}</strong></div><div><span>Songs</span><strong>{data.songs.length}</strong></div><div><span>Media</span><strong>{data.media.length}</strong></div><div><span>Saved services</span><strong>{data.services.length}</strong></div></div>
     <div className="feature-grid"><div><Zap/><h3>Live Scripture Flow</h3><p>Search, preview, send live, then move verse-by-verse with keyboard control.</p></div><div><Monitor/><h3>Cinematic Scripture Studio</h3><p>Optional motion and AI media tools stay separate from the reliable live engine.</p></div><div><ListMusicIcon/><h3>Sunday Service Builder</h3><p>Scripture, songs, announcements, images and videos in one ordered service.</p></div></div>
   </div>
@@ -83,7 +83,7 @@ function BiblePage({verses,translations,onPreview,onAdd,onLive,onImport,onInstal
   return <div className="editor-layout">
     <ScriptureBrowser verses={verses} translations={translations} onPreview={preview} onAdd={onAdd} onImport={onImport} onInstalled={onInstalled}/>
     <section className="editor-center">
-      <div className="editor-heading"><div><span className="eyebrow">SLIDE EDITOR</span><strong>{selected?`${selected.book} ${selected.chapter}:${selected.verse}`:'Scripture preview'}</strong></div><div className="detail-actions">{selected&&<><button onClick={()=>onAdd(selected)}>Add to Service</button><button className="gold" onClick={()=>onLive(selected)}>Send Live</button></>}</div></div>
+      <div className="editor-heading"><div><span className="eyebrow">SLIDE EDITOR</span><strong>{selected?`${selected.book} ${selected.chapter}:${selected.verse}`:'Scripture preview'}</strong></div><div className="detail-actions">{selected&&<><button className="gold" onClick={()=>onLive(selected)}>LIVE NOW</button><button onClick={()=>onAdd(selected)}>Add to Service (optional)</button></>}</div></div>
       <CanvasPreview state={state} live={state.mode==='live'}/>
       <div className="slide-strip"><div className="strip-label">SERVICE</div>{items.length===0?<span className="strip-empty">Add scripture, songs or media to build the service.</span>:items.slice(0,8).map((it,i)=><div className="slide-thumb" key={it.id}><span>{i+1}</span><strong>{it.title}</strong></div>)}</div>
     </section>
@@ -132,6 +132,117 @@ function SettingsPage({displays,settings,translations,refresh,openOut,closeOut,o
   const saveBasics=()=>{onSaveSetting('defaultTranslation',translation);onSaveSetting('resolution',resolution);onSaveSetting('fps',fps);onSaveSetting('mediaFolders',mediaFolders);onSaveSetting('aiEndpoint',omni)}
   return <div className="page settings-page"><div className="page-heading"><div><span className="eyebrow">SYSTEM</span><h1>Settings</h1></div><div className="inline"><button onClick={refresh}>Refresh displays</button><button className="gold" onClick={saveBasics}>Save Settings</button></div></div><section><h3>Presentation defaults</h3><div className="settings-grid"><label>Default translation<select value={translation} onChange={e=>setTranslation(e.target.value)}>{translations.map(t=><option value={t.code} key={t.code}>{t.code} · {t.name}</option>)}</select></label><label>Output resolution<select value={resolution} onChange={e=>setResolution(e.target.value)}><option>1920x1080</option><option>1280x720</option><option>3840x2160</option></select></label><label>FPS preference<select value={fps} onChange={e=>setFps(e.target.value)}><option>30</option><option>60</option></select></label><label>Media folders<input value={mediaFolders} onChange={e=>setMediaFolders(e.target.value)} placeholder="D:\Church Media; C:\Media"/></label></div></section><section><h3>Outputs</h3><div className="settings-grid"><label>Audience display<select value={aud} onChange={e=>{const id=+e.target.value;setAud(id);onSaveSetting('audienceDisplayId',id)}}>{displays.map(d=><option key={d.id} value={d.id}>{d.label} · {d.bounds.width}×{d.bounds.height}{d.primary?' · Primary':''}</option>)}</select><div className="inline"><button className="gold" onClick={()=>openOut('audience',aud)}>Open Audience</button><button onClick={()=>closeOut('audience')}>Close</button></div></label><label>Stage display<select value={stage} onChange={e=>{const id=+e.target.value;setStage(id);onSaveSetting('stageDisplayId',id)}}>{displays.map(d=><option key={d.id} value={d.id}>{d.label} · {d.bounds.width}×{d.bounds.height}</option>)}</select><div className="inline"><button onClick={()=>openOut('stage',stage)}>Open Stage</button><button onClick={()=>closeOut('stage')}>Close</button></div></label></div></section><section><h3>Data & backup</h3><p>Database location: <code>{dataPath||'Loading…'}</code></p><div className="inline"><button onClick={onBackup}>Export Backup</button><button onClick={onRestore}>Restore Backup</button></div></section><section><h3>Hotkeys</h3><p><kbd>Space</kbd> / <kbd>→</kbd> next · <kbd>←</kbd> previous · <kbd>B</kbd> black · <kbd>C</kbd> clear text · <kbd>Esc</kbd> emergency black. Custom remapping is reserved for the next settings pass.</p></section><section><h3>Optional local AI gateway</h3><p>AI is never required for live presentation. VerseFlow only talks to a local OpenAI-compatible endpoint when you enable it.</p><label>OmniRoute / compatible URL<input value={omni} onChange={e=>setOmni(e.target.value)}/></label><div className="inline"><button onClick={async()=>{setHealth('Checking…');const r=await window.verseflow?.integrationHealth(omni);setHealth(r?.ok?'Connected':r?.error||'Not available')}}>Test connection</button><span className="health">{health}</span></div></section></div>
 }
+
+function FreeLivePage({
+  state,setState,onSendLive,verses,media,onPickMedia
+}:{
+  state:PresentationState;
+  setState:(s:PresentationState)=>void;
+  onSendLive:(s?:PresentationState)=>void;
+  verses:Verse[];
+  media:MediaItem[];
+  onPickMedia:()=>void;
+}) {
+  const [tab,setTab]=useState<'text'|'bible'|'media'>('text')
+  const [custom,setCustom]=useState('Welcome to worship')
+  const [reference,setReference]=useState('')
+  const [q,setQ]=useState('John 3:16')
+
+  const found=useMemo(()=>{
+    const x=q.trim().toLowerCase()
+    if(!x)return verses.slice(0,30)
+    return verses.filter(v=>`${v.book} ${v.chapter}:${v.verse} ${v.text}`.toLowerCase().includes(x)).slice(0,80)
+  },[q,verses])
+
+  const previewText=()=>{
+    setState({...state,mode:'preview',text:custom,reference,title:reference||'Custom Text',backgroundType:state.backgroundType||'solid',black:false,logo:false,clearText:false,sequence:state.sequence+1})
+  }
+  const liveText=()=>{
+    const n={...state,mode:'live' as const,text:custom,reference,title:reference||'Custom Text',black:false,logo:false,clearText:false,sequence:state.sequence+1}
+    setState(n); onSendLive(n)
+  }
+  const versePreview=(v:Verse)=>{
+    setState({...state,mode:'preview',title:`${v.book} ${v.chapter}:${v.verse}`,text:v.text,reference:`${v.book} ${v.chapter}:${v.verse}`,black:false,logo:false,clearText:false,sequence:state.sequence+1})
+  }
+  const verseLive=(v:Verse)=>{
+    const n={...state,mode:'live' as const,title:`${v.book} ${v.chapter}:${v.verse}`,text:v.text,reference:`${v.book} ${v.chapter}:${v.verse}`,black:false,logo:false,clearText:false,sequence:state.sequence+1}
+    setState(n); onSendLive(n)
+  }
+  const mediaPreview=(m:MediaItem)=>{
+    setState({...state,mode:'preview',title:m.name,text:'',reference:'',background:m.path,backgroundType:m.type==='video'?'video':'image',black:false,logo:false,clearText:false,sequence:state.sequence+1})
+  }
+  const mediaLive=(m:MediaItem)=>{
+    const n={...state,mode:'live' as const,title:m.name,text:'',reference:'',background:m.path,backgroundType:m.type==='video'?'video':'image',black:false,logo:false,clearText:false,sequence:state.sequence+1}
+    setState(n); onSendLive(n)
+  }
+
+  return <div className="free-live-page">
+    <aside className="free-live-browser">
+      <div className="panel-title">LIVE DESK</div>
+      <div className="live-tabs">
+        <button className={tab==='text'?'active':''} onClick={()=>setTab('text')}>Text</button>
+        <button className={tab==='bible'?'active':''} onClick={()=>setTab('bible')}>Bible</button>
+        <button className={tab==='media'?'active':''} onClick={()=>setTab('media')}>Media</button>
+      </div>
+
+      {tab==='text'&&<div className="quick-live-form">
+        <label>Anything you want to display
+          <textarea value={custom} onChange={e=>setCustom(e.target.value)} placeholder="Type an announcement, prayer, title, message…"/>
+        </label>
+        <label>Small reference / subtitle
+          <input value={reference} onChange={e=>setReference(e.target.value)} placeholder="Optional"/>
+        </label>
+        <div className="quick-actions">
+          <button onClick={previewText}>Preview</button>
+          <button className="gold" onClick={liveText}>LIVE NOW</button>
+        </div>
+      </div>}
+
+      {tab==='bible'&&<>
+        <label className="search-field"><Search size={16}/><input value={q} onChange={e=>setQ(e.target.value)} placeholder="John 3:16"/></label>
+        <div className="instant-verse-list">
+          {found.map(v=><article key={`${v.translation}-${v.id}`}>
+            <div onClick={()=>versePreview(v)}>
+              <strong>{v.book} {v.chapter}:{v.verse}</strong>
+              <span>{v.translation}</span>
+              <p>{v.text}</p>
+            </div>
+            <button className="gold small" onClick={()=>verseLive(v)}>LIVE</button>
+          </article>)}
+        </div>
+      </>}
+
+      {tab==='media'&&<>
+        <button className="import-wide" onClick={onPickMedia}>+ Import Image / Video</button>
+        <div className="instant-media-list">
+          {media.map(m=><article key={m.id}>
+            <div onClick={()=>mediaPreview(m)}>
+              <strong>{m.name}</strong><span>{m.type}</span>
+            </div>
+            <button className="gold small" onClick={()=>mediaLive(m)}>LIVE</button>
+          </article>)}
+        </div>
+      </>}
+    </aside>
+
+    <section className="free-live-center">
+      <div className="free-live-heading">
+        <div><span className="eyebrow">FREE LIVE MODE</span><h2>Display anything, anytime.</h2></div>
+        <span className={state.mode==='live'?'live-badge':'ready-badge'}>{state.mode==='live'?'LIVE':'PREVIEW'}</span>
+      </div>
+      <CanvasPreview state={state} live={state.mode==='live'}/>
+      <div className="live-safety-bar">
+        <button className={state.black?'active-red':''} onClick={()=>{const n={...state,mode:'live' as const,black:!state.black,logo:false,sequence:state.sequence+1};setState(n);onSendLive(n)}}>BLACK</button>
+        <button className={state.clearText?'active':''} onClick={()=>{const n={...state,mode:'live' as const,clearText:!state.clearText,sequence:state.sequence+1};setState(n);onSendLive(n)}}>CLEAR TEXT</button>
+        <button className={state.logo?'active':''} onClick={()=>{const n={...state,mode:'live' as const,logo:!state.logo,black:false,sequence:state.sequence+1};setState(n);onSendLive(n)}}>LOGO</button>
+        <button onClick={()=>{const n={...state,mode:'live' as const,text:'',reference:'',black:false,logo:false,clearText:false,background:undefined,backgroundType:'solid' as const,sequence:state.sequence+1};setState(n);onSendLive(n)}}>EMPTY SCREEN</button>
+      </div>
+    </section>
+
+    <Inspector state={state} setState={setState} themes={[state.theme]}/>
+  </div>
+}
+
 function PresentPage({state,setState,sendSafety,items,index,setIndex,sendLive,displays,openOut}:{state:PresentationState;setState:(s:PresentationState)=>void;sendSafety:(patch:Partial<PresentationState>)=>void;items:ServiceItem[];index:number;setIndex:(i:number)=>void;sendLive:()=>void;displays:DisplayInfo[];openOut:(k:'audience'|'stage',id:number)=>void}) {
   const prev=()=>setIndex(Math.max(0,index-1)), next=()=>setIndex(Math.min(items.length-1,index+1))
   return <div className="present-page"><div className="present-main"><CanvasPreview state={state} live={state.mode==='live'}/><div className="transport"><button onClick={prev}><ChevronLeft/> Previous</button><button className="gold go-live" onClick={sendLive}>GO LIVE</button><button onClick={next}>Next <ChevronRight/></button></div>{state.backgroundType==='video'&&<div className="video-controls"><button onClick={()=>setState({...state,video:{...(state.video||{playing:true,muted:true,volume:.8,loop:true}),playing:!(state.video?.playing??true),seekDelta:0,commandId:Date.now()}})}>{state.video?.playing===false?'Play':'Pause'}</button><button onClick={()=>setState({...state,video:{...(state.video||{playing:true,muted:true,volume:.8,loop:true}),seekDelta:-10,commandId:Date.now()}})}>−10s</button><button onClick={()=>setState({...state,video:{...(state.video||{playing:true,muted:true,volume:.8,loop:true}),seekDelta:10,commandId:Date.now()}})}>+10s</button><button onClick={()=>setState({...state,video:{...(state.video||{playing:true,muted:true,volume:.8,loop:true}),muted:!(state.video?.muted??true),seekDelta:0,commandId:Date.now()}})}>{state.video?.muted===false?'Mute':'Unmute'}</button><label>Volume <input type="range" min="0" max="100" value={Math.round((state.video?.volume??.8)*100)} onChange={e=>setState({...state,video:{...(state.video||{playing:true,muted:true,volume:.8,loop:true}),volume:+e.target.value/100,seekDelta:0,commandId:Date.now()}})}/></label></div>}<div className="safety-controls"><button className={state.black?'active-red':''} onClick={()=>sendSafety({black:!state.black,logo:false})}>Black Screen <kbd>B</kbd></button><button className={state.clearText?'active':''} onClick={()=>sendSafety({clearText:!state.clearText})}>Clear Text <kbd>C</kbd></button><button className={state.logo?'active':''} onClick={()=>sendSafety({logo:!state.logo,black:false})}>Logo</button><button className={state.frozen?'active':''} onClick={()=>sendSafety({frozen:!state.frozen})}>Freeze</button></div></div><aside className="present-queue"><div className="panel-title">Current / Next</div>{items.slice(Math.max(0,index-1),index+5).map((it,j)=>{const actual=Math.max(0,index-1)+j;return <button className={actual===index?'current':''} onClick={()=>setIndex(actual)} key={it.id}><span>{actual===index?'CURRENT':actual===index+1?'NEXT':actual+1}</span><strong>{it.title}</strong></button>})}<div className="output-box"><h3>Outputs</h3><p>{displays.length} display{displays.length===1?'':'s'} detected</p>{displays[1]&&<button onClick={()=>openOut('audience',displays[1].id)}>Open on {displays[1].label}</button>}</div></aside></div>
@@ -224,7 +335,7 @@ export default function App() {
         {active==='songs'&&<SongsPage songs={data.songs} onSave={saveSong} onAdd={addSong}/>}
         {active==='media'&&<MediaPage media={data.media} onImport={importMedia} onAdd={addMedia}/>}
         {active==='playlists'&&<PlaylistPage items={items} setItems={setItems} onSelect={previewItem} onLive={liveAt} onSave={async(name,list)=>{const service={id:uid('service'),title:name,date:new Date().toISOString(),items:list};await window.verseflow?.upsert('services',service);await reload();setToast('Service saved')}}/>}
-        {active==='present'&&<PresentPage state={state} setState={setStateAndSync} sendSafety={sendSafety} items={items} index={index} setIndex={previewItem} sendLive={sendLive} displays={displays} openOut={openOut}/>}
+        {active==='present'&&<FreeLivePage state={state} setState={setStateAndSync} onSendLive={(s)=>{const live=s||{...state,mode:'live' as const,sequence:state.sequence+1};setState(live);lastLive.current=live;window.verseflow?.sendPresentationState(live);setToast('Audience updated')}} verses={data.verses} media={data.media} onPickMedia={importMedia}/>}
         {active==='themes'&&<ThemesPage themes={themes} onApply={applyTheme} onSave={saveTheme}/>}
         {active==='settings'&&<SettingsPage displays={displays} settings={data.settings} translations={data.translations} refresh={refreshDisplays} openOut={openOut} closeOut={k=>window.verseflow?.closeOutput(k)} onSaveSetting={async(k,v)=>{await window.verseflow?.saveSetting(k,v);await reload();setToast('Setting saved')}} onBackup={async()=>{const r=await window.verseflow?.exportBackup();setToast(r?.ok?'Backup exported':r?.error||'Backup failed')}} onRestore={async()=>{const r=await window.verseflow?.importBackup();if(r?.ok)await reload();setToast(r?.ok?'Backup restored':r?.error||'Restore failed')}}/>}
       </div>

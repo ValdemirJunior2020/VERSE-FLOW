@@ -143,13 +143,13 @@ ipcMain.handle('bible:install-catalog',async(_e,code)=>{
     if(item.status!=='download') throw new Error(`${item.code} requires a local Bible file. Use Import.`)
 
     let payload
-    if(item.sourceType){
+    if(item.url){
+      payload=await downloadJson(item.url)
+    }else if(item.sourceType){
       const verses=await downloadRepoBible(item)
       payload={translation:item.code,name:item.name,license:`${item.license} · Source: ${item.source}`,verses}
-    }else if(item.url){
-      payload=await downloadJson(item.url)
     }else{
-      throw new Error('No download source is configured for this translation.')
+      throw new Error('No verified automatic download is configured for this translation yet. Use Import JSON.')
     }
 
     const result=db.importTranslation(payload,{code:item.code,name:item.name,license:`${item.license} · Source: ${item.source}`})
