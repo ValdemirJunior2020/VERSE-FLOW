@@ -60,3 +60,12 @@ Portuguese choices include **Almeida**, **Almeida 1819**, **Almeida 1911**, **Tr
 Translations with a verified download mapping show **Install**. The others show **Import** until a full-text JSON source is provided. Installed/imported Bibles are stored locally and work offline.
 
 See `bibles/TRANSLATION_STATUS.md`.
+
+## GitHub Bible Sources
+
+The Bible Library can now install public-domain English translations directly from
+`public-domain-bibles/english` and the public-domain Portuguese translations
+ALM1911, TB and BLIVRE from `damarals/biblias`. After installation they are stored
+locally for offline presentation.
+
+See `docs/GITHUB_BIBLE_SOURCES.md`.

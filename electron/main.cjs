@@ -5,6 +5,7 @@ const http = require('http')
 const https = require('https')
 const { pathToFileURL } = require('url')
 const { VerseFlowDb } = require('./db.cjs')
+const { downloadRepoBible } = require('./repo-bibles.cjs')
 
 const bibleCatalog = require('../src/data/bible-catalog.json')
 const bibleCatalogByCode = new Map(bibleCatalog.map(x => [String(x.code).toUpperCase(), x]))
@@ -139,8 +140,18 @@ ipcMain.handle('bible:install-catalog',async(_e,code)=>{
   try{
     const item=bibleCatalogByCode.get(String(code||'').toUpperCase())
     if(!item) throw new Error('Bible catalog entry not found.')
-    if(item.status!=='download'||!item.url) throw new Error(`${item.code} requires a local Bible file. Use Import.`)
-    const payload=await downloadJson(item.url)
+    if(item.status!=='download') throw new Error(`${item.code} requires a local Bible file. Use Import.`)
+
+    let payload
+    if(item.sourceType){
+      const verses=await downloadRepoBible(item)
+      payload={translation:item.code,name:item.name,license:`${item.license} · Source: ${item.source}`,verses}
+    }else if(item.url){
+      payload=await downloadJson(item.url)
+    }else{
+      throw new Error('No download source is configured for this translation.')
+    }
+
     const result=db.importTranslation(payload,{code:item.code,name:item.name,license:`${item.license} · Source: ${item.source}`})
     return{ok:true,...result}
   }catch(e){return{ok:false,error:e.message}}
