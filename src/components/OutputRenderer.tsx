@@ -58,9 +58,10 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
     return <div className="audience-output youtube-output">
       <iframe
         className="audience-youtube"
-        src={`https://www.youtube-nocookie.com/embed/${state.youtubeId}?autoplay=${autoplay}&rel=0&controls=1&modestbranding=1`}
+        src={`https://www.youtube-nocookie.com/embed/${state.youtubeId}?autoplay=${autoplay}&rel=0&controls=1&modestbranding=1&origin=https%3A%2F%2Fverseflow.app&widget_referrer=https%3A%2F%2Fverseflow.app%2F`}
         title="VerseFlow YouTube"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        referrerPolicy="strict-origin-when-cross-origin"
         allowFullScreen
       />
     </div>

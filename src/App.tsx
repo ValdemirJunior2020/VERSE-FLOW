@@ -343,9 +343,10 @@ function FreeLivePage({
         <p>The audience output uses YouTube's official embedded player. YouTube controls any ads that appear.</p>
         {youtubeId&&<div className="youtube-embed-small">
           <iframe
-            src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=0&rel=0`}
+            src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=0&rel=0&origin=https%3A%2F%2Fverseflow.app&widget_referrer=https%3A%2F%2Fverseflow.app%2F`}
             title="YouTube"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
         </div>}
@@ -361,7 +362,7 @@ function FreeLivePage({
       {tab==='youtube'&&youtubeId
         ? <div className="youtube-main-preview">
             <iframe
-              src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=0&rel=0`}
+              src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=0&rel=0&origin=https%3A%2F%2Fverseflow.app&widget_referrer=https%3A%2F%2Fverseflow.app%2F`}
               title="YouTube preview"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen

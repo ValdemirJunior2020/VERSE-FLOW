@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain, dialog, shell } = require('electron')
+const { app, BrowserWindow, screen, ipcMain, dialog, shell , session} = require('electron')
 const path = require('path')
 const fs = require('fs')
 const http = require('http')
@@ -99,6 +99,33 @@ function entityId(value) {
   return value.id || value.key || null
 }
 const allowedEntities = new Set(['songs','media','services','themes'])
+
+
+function configureYouTubeRequestIdentity() {
+  const ses = session.defaultSession
+
+  ses.webRequest.onBeforeSendHeaders(
+    {
+      urls: [
+        'https://www.youtube.com/*',
+        'https://www.youtube-nocookie.com/*',
+        'https://*.googlevideo.com/*',
+        'https://*.ytimg.com/*',
+        'https://*.google.com/*'
+      ]
+    },
+    (details, callback) => {
+      const requestHeaders = { ...details.requestHeaders }
+
+      // YouTube requires desktop/webview embedders to identify the embedding
+      // context with an HTTP Referer. Electron file:// pages otherwise send none.
+      requestHeaders.Referer = 'https://verseflow.app/'
+      requestHeaders.Origin = 'https://verseflow.app'
+
+      callback({ requestHeaders })
+    }
+  )
+}
 
 app.whenReady().then(async()=>{
   const dataFile=path.join(app.getPath('userData'),'data','verseflow.sqlite')
