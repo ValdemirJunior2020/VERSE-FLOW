@@ -72,6 +72,8 @@ export interface PresentationState {
   nextTitle: string
   background?: string
   backgroundType?: 'image' | 'video' | 'solid'
+  youtubeId?: string
+  youtubeAutoplay?: boolean
   theme: Theme
   black: boolean
   clearText: boolean

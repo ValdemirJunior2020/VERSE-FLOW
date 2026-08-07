@@ -53,6 +53,19 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
   }
 
   if (state.black) return <div className="audience-output black-screen" />
+  if (state.youtubeId) {
+    const autoplay = state.youtubeAutoplay ? 1 : 0
+    return <div className="audience-output youtube-output">
+      <iframe
+        className="audience-youtube"
+        src={`https://www.youtube-nocookie.com/embed/${state.youtubeId}?autoplay=${autoplay}&rel=0&controls=1&modestbranding=1`}
+        title="VerseFlow YouTube"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+        allowFullScreen
+      />
+    </div>
+  }
+
   if (state.logo) return <div className="audience-output logo-screen"><div className="vf-logo-mark">VF</div><div>VERSEFLOW</div></div>
 
   return <div className="audience-output" style={{

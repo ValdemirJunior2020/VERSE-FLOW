@@ -83,3 +83,15 @@ Open **Live Desk** to:
 - change theme/properties without building a service
 
 Service Builder remains available as an optional workflow for planned Sundays.
+
+
+## Live Media and YouTube
+
+Live Desk includes Text, Bible, Songs, Media and YouTube tabs.
+
+Songs can be created and saved locally, with each section available for Preview or Live.
+Images, videos and audio can be imported freely into the local media library.
+Images and videos can be sent live without building a service.
+YouTube links open inside VerseFlow using the standard embedded player.
+YouTube advertising is controlled by YouTube and is not bypassed by VerseFlow.
+Text color and reference/accent color can be changed with color pickers in Properties.

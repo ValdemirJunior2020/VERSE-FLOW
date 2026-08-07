@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { ChevronLeft, ChevronRight, CirclePlus, Clock3, Images, Import, Monitor, Search, Undo2, WifiOff, Zap } from 'lucide-react'
+import { ChevronLeft, ChevronRight, CirclePlus, Clock3, Images, Import, Monitor, Search, Undo2, WifiOff, Youtube, Zap } from 'lucide-react'
 import Nav from './components/Nav'
 import CanvasPreview from './components/CanvasPreview'
 import OutputRenderer from './components/OutputRenderer'
@@ -61,6 +61,12 @@ function Inspector({state,setState,themes}:{state:PresentationState;setState:(s:
     <label>Theme<select value={state.theme.id} onChange={e=>{const t=themes.find(x=>x.id===e.target.value); if(t) setState({...state,theme:t})}}>{themes.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}</select></label>
     <label>Font Family<select value={state.theme.fontFamily} onChange={e=>patchTheme({fontFamily:e.target.value})}><option>Georgia, Times New Roman, serif</option><option>Arial, Helvetica, sans-serif</option><option>Verdana, sans-serif</option></select></label>
     <label>Font Size<div className="range-row"><input type="range" min="30" max="110" value={state.theme.fontSize} onChange={e=>patchTheme({fontSize:+e.target.value})}/><span>{state.theme.fontSize}</span></div></label>
+    <label>Text Color
+      <input type="color" value={state.theme.textColor} onChange={e=>patchTheme({textColor:e.target.value})}/>
+    </label>
+    <label>Accent / Reference Color
+      <input type="color" value={state.theme.accentColor} onChange={e=>patchTheme({accentColor:e.target.value})}/>
+    </label>
     <label>Alignment<div className="seg"><button className={state.theme.alignment==='left'?'active':''} onClick={()=>patchTheme({alignment:'left'})}>Left</button><button className={state.theme.alignment==='center'?'active':''} onClick={()=>patchTheme({alignment:'center'})}>Center</button><button className={state.theme.alignment==='right'?'active':''} onClick={()=>patchTheme({alignment:'right'})}>Right</button></div></label>
     <label>Overlay Darkness<div className="range-row"><input type="range" min="0" max="90" value={Math.round(state.theme.overlay*100)} onChange={e=>patchTheme({overlay:+e.target.value/100})}/><span>{Math.round(state.theme.overlay*100)}%</span></div></label>
     <label>Transition<select value={state.theme.transition} onChange={e=>patchTheme({transition:e.target.value as Theme['transition']})}><option value="fade">Fade</option><option value="cut">Cut</option><option value="slide">Slide</option></select></label>
@@ -134,7 +140,7 @@ function SettingsPage({displays,settings,translations,refresh,openOut,closeOut,o
 }
 
 function FreeLivePage({
-  state,setState,onSendLive,verses,media,onPickMedia
+  state,setState,onSendLive,verses,media,onPickMedia,songs,onSaveSong
 }:{
   state:PresentationState;
   setState:(s:PresentationState)=>void;
@@ -142,11 +148,18 @@ function FreeLivePage({
   verses:Verse[];
   media:MediaItem[];
   onPickMedia:()=>void;
+  songs:Song[];
+  onSaveSong:(s:Song)=>Promise<void>;
 }) {
-  const [tab,setTab]=useState<'text'|'bible'|'media'>('text')
+  const [tab,setTab]=useState<'text'|'bible'|'songs'|'media'|'youtube'>('text')
   const [custom,setCustom]=useState('Welcome to worship')
   const [reference,setReference]=useState('')
   const [q,setQ]=useState('John 3:16')
+  const [songQuery,setSongQuery]=useState('')
+  const [youtubeUrl,setYoutubeUrl]=useState('')
+  const [youtubeId,setYoutubeId]=useState('')
+  const [newSongTitle,setNewSongTitle]=useState('')
+  const [newSongBody,setNewSongBody]=useState('Verse 1\n\nChorus\n')
 
   const found=useMemo(()=>{
     const x=q.trim().toLowerCase()
@@ -154,35 +167,111 @@ function FreeLivePage({
     return verses.filter(v=>`${v.book} ${v.chapter}:${v.verse} ${v.text}`.toLowerCase().includes(x)).slice(0,80)
   },[q,verses])
 
+  const songResults=useMemo(()=>{
+    const x=songQuery.trim().toLowerCase()
+    return songs.filter(s=>!x||`${s.title} ${s.author||''}`.toLowerCase().includes(x))
+  },[songQuery,songs])
+
+  const live=(n:PresentationState)=>{setState(n);onSendLive(n)}
+
   const previewText=()=>{
     setState({...state,mode:'preview',text:custom,reference,title:reference||'Custom Text',backgroundType:state.backgroundType||'solid',black:false,logo:false,clearText:false,sequence:state.sequence+1})
   }
+
   const liveText=()=>{
-    const n={...state,mode:'live' as const,text:custom,reference,title:reference||'Custom Text',black:false,logo:false,clearText:false,sequence:state.sequence+1}
-    setState(n); onSendLive(n)
+    live({...state,mode:'live',text:custom,reference,title:reference||'Custom Text',youtubeId:undefined,black:false,logo:false,clearText:false,sequence:state.sequence+1})
   }
+
   const versePreview=(v:Verse)=>{
     setState({...state,mode:'preview',title:`${v.book} ${v.chapter}:${v.verse}`,text:v.text,reference:`${v.book} ${v.chapter}:${v.verse}`,black:false,logo:false,clearText:false,sequence:state.sequence+1})
   }
+
   const verseLive=(v:Verse)=>{
-    const n={...state,mode:'live' as const,title:`${v.book} ${v.chapter}:${v.verse}`,text:v.text,reference:`${v.book} ${v.chapter}:${v.verse}`,black:false,logo:false,clearText:false,sequence:state.sequence+1}
-    setState(n); onSendLive(n)
+    live({...state,mode:'live',title:`${v.book} ${v.chapter}:${v.verse}`,text:v.text,reference:`${v.book} ${v.chapter}:${v.verse}`,youtubeId:undefined,black:false,logo:false,clearText:false,sequence:state.sequence+1})
   }
+
   const mediaPreview=(m:MediaItem)=>{
     setState({...state,mode:'preview',title:m.name,text:'',reference:'',background:m.path,backgroundType:m.type==='video'?'video':'image',black:false,logo:false,clearText:false,sequence:state.sequence+1})
   }
+
   const mediaLive=(m:MediaItem)=>{
-    const n={...state,mode:'live' as const,title:m.name,text:'',reference:'',background:m.path,backgroundType:m.type==='video'?'video':'image',black:false,logo:false,clearText:false,sequence:state.sequence+1}
-    setState(n); onSendLive(n)
+    live({...state,mode:'live',title:m.name,text:'',reference:'',youtubeId:undefined,background:m.path,backgroundType:m.type==='video'?'video':'image',black:false,logo:false,clearText:false,sequence:state.sequence+1})
+  }
+
+  const songSectionPreview=(song:Song,section:Song['sections'][number])=>{
+    setState({...state,mode:'preview',title:song.title,text:section.lines.join('\n'),reference:section.label,black:false,logo:false,clearText:false,sequence:state.sequence+1})
+  }
+
+  const songSectionLive=(song:Song,section:Song['sections'][number])=>{
+    live({...state,mode:'live',title:song.title,text:section.lines.join('\n'),reference:section.label,youtubeId:undefined,black:false,logo:false,clearText:false,sequence:state.sequence+1})
+  }
+
+  const saveQuickSong=async()=>{
+    const sections=newSongBody.split(/\n\s*\n/).map((block,i)=>{
+      const lines=block.split('\n').map(x=>x.trim()).filter(Boolean)
+      return {id:`quick-${Date.now()}-${i}`,label:lines.shift()||`Section ${i+1}`,lines}
+    }).filter(x=>x.lines.length)
+
+    if(!newSongTitle.trim()||!sections.length)return
+
+    await onSaveSong({
+      id:`song-${Date.now()}`,
+      title:newSongTitle.trim(),
+      sections
+    })
+
+    setNewSongTitle('')
+    setNewSongBody('Verse 1\n\nChorus\n')
+  }
+
+  const presentYoutube=()=>{
+    if(!youtubeId)return
+    live({
+      ...state,
+      mode:'live',
+      title:'YouTube',
+      text:'',
+      reference:'',
+      youtubeId,
+      youtubeAutoplay:true,
+      background:undefined,
+      backgroundType:'solid',
+      black:false,
+      logo:false,
+      clearText:false,
+      sequence:state.sequence+1
+    })
+  }
+
+  const parseYoutube=(value:string)=>{
+    try{
+      const u=new URL(value)
+      let id=''
+      if(u.hostname.includes('youtu.be')){
+        id=u.pathname.replace('/','')
+      }else if(u.searchParams.get('v')){
+        id=u.searchParams.get('v')||''
+      }else{
+        const parts=u.pathname.split('/').filter(Boolean)
+        const i=parts.findIndex(x=>x==='embed'||x==='shorts')
+        if(i>=0) id=parts[i+1]||''
+      }
+      setYoutubeId(id)
+    }catch{
+      setYoutubeId(value.trim())
+    }
   }
 
   return <div className="free-live-page">
     <aside className="free-live-browser">
       <div className="panel-title">LIVE DESK</div>
-      <div className="live-tabs">
+
+      <div className="live-tabs five">
         <button className={tab==='text'?'active':''} onClick={()=>setTab('text')}>Text</button>
         <button className={tab==='bible'?'active':''} onClick={()=>setTab('bible')}>Bible</button>
+        <button className={tab==='songs'?'active':''} onClick={()=>setTab('songs')}>Songs</button>
         <button className={tab==='media'?'active':''} onClick={()=>setTab('media')}>Media</button>
+        <button className={`youtube-tab ${tab==='youtube'?'active':''}`} onClick={()=>setTab('youtube')}><Youtube size={13}/> YouTube</button>
       </div>
 
       {tab==='text'&&<div className="quick-live-form">
@@ -212,17 +301,55 @@ function FreeLivePage({
         </div>
       </>}
 
+      {tab==='songs'&&<>
+        <label className="search-field"><Search size={16}/><input value={songQuery} onChange={e=>setSongQuery(e.target.value)} placeholder="Search songs"/></label>
+        <div className="quick-song-create">
+          <input value={newSongTitle} onChange={e=>setNewSongTitle(e.target.value)} placeholder="New song title"/>
+          <textarea value={newSongBody} onChange={e=>setNewSongBody(e.target.value)} placeholder="Verse 1&#10;Lyrics...&#10;&#10;Chorus&#10;Lyrics..."/>
+          <button onClick={saveQuickSong}>Save Song</button>
+        </div>
+        <div className="instant-song-list">
+          {songResults.map(song=><article key={song.id}>
+            <strong>{song.title}</strong>
+            {song.sections.map(section=><div className="song-section-row" key={section.id}>
+              <button onClick={()=>songSectionPreview(song,section)}>{section.label}</button>
+              <button className="gold small" onClick={()=>songSectionLive(song,section)}>LIVE</button>
+            </div>)}
+          </article>)}
+        </div>
+      </>}
+
       {tab==='media'&&<>
-        <button className="import-wide" onClick={onPickMedia}>+ Import Image / Video</button>
+        <button className="import-wide gold" onClick={onPickMedia}>+ Import Image / Video / Audio</button>
         <div className="instant-media-list">
           {media.map(m=><article key={m.id}>
             <div onClick={()=>mediaPreview(m)}>
               <strong>{m.name}</strong><span>{m.type}</span>
             </div>
-            <button className="gold small" onClick={()=>mediaLive(m)}>LIVE</button>
+            {m.type!=='audio'&&<button className="gold small" onClick={()=>mediaLive(m)}>LIVE</button>}
           </article>)}
         </div>
       </>}
+
+      {tab==='youtube'&&<div className="youtube-panel">
+        <div className="youtube-brand"><Youtube size={30}/><div><strong>YouTube</strong><span>Play a video inside VerseFlow</span></div></div>
+        <label>YouTube URL
+          <input value={youtubeUrl} onChange={e=>setYoutubeUrl(e.target.value)} placeholder="Paste YouTube link here"/>
+        </label>
+        <div className="youtube-actions">
+          <button onClick={()=>parseYoutube(youtubeUrl)}>LOAD / PREVIEW</button>
+          <button className="youtube-present" disabled={!youtubeId} onClick={presentYoutube}><Youtube size={17}/> PRESENT YOUTUBE</button>
+        </div>
+        <p>The audience output uses YouTube's official embedded player. YouTube controls any ads that appear.</p>
+        {youtubeId&&<div className="youtube-embed-small">
+          <iframe
+            src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=0&rel=0`}
+            title="YouTube"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            allowFullScreen
+          />
+        </div>}
+      </div>}
     </aside>
 
     <section className="free-live-center">
@@ -230,12 +357,24 @@ function FreeLivePage({
         <div><span className="eyebrow">FREE LIVE MODE</span><h2>Display anything, anytime.</h2></div>
         <span className={state.mode==='live'?'live-badge':'ready-badge'}>{state.mode==='live'?'LIVE':'PREVIEW'}</span>
       </div>
-      <CanvasPreview state={state} live={state.mode==='live'}/>
+
+      {tab==='youtube'&&youtubeId
+        ? <div className="youtube-main-preview">
+            <iframe
+              src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=0&rel=0`}
+              title="YouTube preview"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowFullScreen
+            />
+          </div>
+        : <CanvasPreview state={state} live={state.mode==='live'}/>
+      }
+
       <div className="live-safety-bar">
-        <button className={state.black?'active-red':''} onClick={()=>{const n={...state,mode:'live' as const,black:!state.black,logo:false,sequence:state.sequence+1};setState(n);onSendLive(n)}}>BLACK</button>
-        <button className={state.clearText?'active':''} onClick={()=>{const n={...state,mode:'live' as const,clearText:!state.clearText,sequence:state.sequence+1};setState(n);onSendLive(n)}}>CLEAR TEXT</button>
-        <button className={state.logo?'active':''} onClick={()=>{const n={...state,mode:'live' as const,logo:!state.logo,black:false,sequence:state.sequence+1};setState(n);onSendLive(n)}}>LOGO</button>
-        <button onClick={()=>{const n={...state,mode:'live' as const,text:'',reference:'',black:false,logo:false,clearText:false,background:undefined,backgroundType:'solid' as const,sequence:state.sequence+1};setState(n);onSendLive(n)}}>EMPTY SCREEN</button>
+        <button className={state.black?'active-red':''} onClick={()=>live({...state,mode:'live',black:!state.black,logo:false,sequence:state.sequence+1})}>BLACK</button>
+        <button className={state.clearText?'active':''} onClick={()=>live({...state,mode:'live',clearText:!state.clearText,sequence:state.sequence+1})}>CLEAR TEXT</button>
+        <button className={state.logo?'active':''} onClick={()=>live({...state,mode:'live',logo:!state.logo,black:false,sequence:state.sequence+1})}>LOGO</button>
+        <button onClick={()=>live({...state,mode:'live',text:'',reference:'',youtubeId:undefined,black:false,logo:false,clearText:false,background:undefined,backgroundType:'solid',sequence:state.sequence+1})}>EMPTY SCREEN</button>
       </div>
     </section>
 
@@ -335,7 +474,7 @@ export default function App() {
         {active==='songs'&&<SongsPage songs={data.songs} onSave={saveSong} onAdd={addSong}/>}
         {active==='media'&&<MediaPage media={data.media} onImport={importMedia} onAdd={addMedia}/>}
         {active==='playlists'&&<PlaylistPage items={items} setItems={setItems} onSelect={previewItem} onLive={liveAt} onSave={async(name,list)=>{const service={id:uid('service'),title:name,date:new Date().toISOString(),items:list};await window.verseflow?.upsert('services',service);await reload();setToast('Service saved')}}/>}
-        {active==='present'&&<FreeLivePage state={state} setState={setStateAndSync} onSendLive={(s)=>{const live=s||{...state,mode:'live' as const,sequence:state.sequence+1};setState(live);lastLive.current=live;window.verseflow?.sendPresentationState(live);setToast('Audience updated')}} verses={data.verses} media={data.media} onPickMedia={importMedia}/>}
+        {active==='present'&&<FreeLivePage state={state} setState={setStateAndSync} onSendLive={(s)=>{const live=s||{...state,mode:'live' as const,sequence:state.sequence+1};setState(live);lastLive.current=live;window.verseflow?.sendPresentationState(live);setToast('Audience updated')}} verses={data.verses} media={data.media} onPickMedia={importMedia} songs={data.songs} onSaveSong={saveSong}/>}
         {active==='themes'&&<ThemesPage themes={themes} onApply={applyTheme} onSave={saveTheme}/>}
         {active==='settings'&&<SettingsPage displays={displays} settings={data.settings} translations={data.translations} refresh={refreshDisplays} openOut={openOut} closeOut={k=>window.verseflow?.closeOutput(k)} onSaveSetting={async(k,v)=>{await window.verseflow?.saveSetting(k,v);await reload();setToast('Setting saved')}} onBackup={async()=>{const r=await window.verseflow?.exportBackup();setToast(r?.ok?'Backup exported':r?.error||'Backup failed')}} onRestore={async()=>{const r=await window.verseflow?.importBackup();if(r?.ok)await reload();setToast(r?.ok?'Backup restored':r?.error||'Restore failed')}}/>}
       </div>

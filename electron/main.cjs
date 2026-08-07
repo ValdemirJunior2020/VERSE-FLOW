@@ -11,6 +11,7 @@ const bibleCatalog = require('./bible-catalog.json')
 const bibleCatalogByCode = new Map(bibleCatalog.map(x => [String(x.code).toUpperCase(), x]))
 
 app.setAppUserModelId('com.verseflow.desktop')
+app.commandLine.appendSwitch('autoplay-policy','no-user-gesture-required')
 
 let controlWindow
 let audienceWindow

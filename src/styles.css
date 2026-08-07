@@ -1604,3 +1604,218 @@ kbd{
 
   .present-page{grid-template-columns:1fr 230px}
 }
+
+
+/* Extended Live Desk: Songs + YouTube */
+
+.live-tabs.five{
+  grid-template-columns:repeat(5,1fr);
+}
+
+.live-tabs.five button{
+  padding:7px 4px;
+  font-size:9px;
+}
+
+.quick-song-create{
+  display:grid;
+  gap:7px;
+  margin:10px 0 14px;
+  padding:10px;
+  background:#fffaf2;
+  border:1px solid var(--border);
+  border-radius:10px;
+}
+
+.quick-song-create textarea{
+  min-height:120px;
+  resize:vertical;
+  line-height:1.5;
+}
+
+.instant-song-list{
+  display:grid;
+  gap:9px;
+}
+
+.instant-song-list article{
+  background:#fbf7ef;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px;
+}
+
+.instant-song-list article>strong{
+  display:block;
+  margin-bottom:8px;
+  color:var(--text);
+}
+
+.song-section-row{
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:6px;
+  margin-top:5px;
+}
+
+.song-section-row>button:first-child{
+  text-align:left;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
+.youtube-panel{
+  display:grid;
+  gap:9px;
+}
+
+.youtube-panel label{
+  font-size:10px;
+  color:var(--muted);
+}
+
+.youtube-panel input{
+  width:100%;
+  margin-top:6px;
+}
+
+.youtube-panel p{
+  font-size:9px;
+  color:var(--muted);
+  line-height:1.45;
+}
+
+.youtube-embed-small{
+  aspect-ratio:16/9;
+  background:#000;
+  border-radius:10px;
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+
+.youtube-embed-small iframe,
+.youtube-main-preview iframe{
+  width:100%;
+  height:100%;
+  border:0;
+}
+
+.youtube-main-preview{
+  width:min(100%,1050px);
+  aspect-ratio:16/9;
+  margin:auto;
+  background:#000;
+  border:1px solid var(--border);
+  box-shadow:0 12px 35px rgba(60,45,25,.12);
+}
+
+.inspector input[type="color"]{
+  width:100%;
+  height:38px;
+  padding:3px;
+  cursor:pointer;
+  background:#fffaf2;
+}
+
+.instant-media-list{
+  max-height:calc(100vh - 220px);
+  overflow:auto;
+  padding-right:2px;
+}
+
+.instant-media-list article{
+  min-height:52px;
+}
+
+
+/* YouTube live presentation */
+
+.youtube-tab{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+}
+
+.youtube-tab svg{
+  color:#ff0000;
+  fill:#ff0000;
+}
+
+.youtube-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#fff;
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px;
+}
+
+.youtube-brand>svg{
+  color:#ff0000;
+  fill:#ff0000;
+}
+
+.youtube-brand strong,
+.youtube-brand span{
+  display:block;
+}
+
+.youtube-brand strong{
+  color:#282828;
+  font-size:14px;
+}
+
+.youtube-brand span{
+  color:var(--muted);
+  font-size:9px;
+  margin-top:2px;
+}
+
+.youtube-actions{
+  display:grid;
+  grid-template-columns:1fr 1.25fr;
+  gap:7px;
+}
+
+.youtube-present{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  background:#ff0000!important;
+  border-color:#d90000!important;
+  color:#fff!important;
+  font-weight:900;
+}
+
+.youtube-present:hover{
+  background:#e60000!important;
+}
+
+.youtube-present:disabled{
+  background:#d8b5b5!important;
+  border-color:#cfa9a9!important;
+  color:#fff!important;
+}
+
+.youtube-present svg{
+  fill:#fff;
+  color:#fff;
+}
+
+.youtube-output{
+  background:#000!important;
+  display:flex;
+  align-items:stretch;
+  justify-content:stretch;
+}
+
+.audience-youtube{
+  width:100vw;
+  height:100vh;
+  border:0;
+  background:#000;
+}
