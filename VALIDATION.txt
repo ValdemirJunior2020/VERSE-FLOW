@@ -12,3 +12,5 @@ Checks completed in the build workspace:
 The included INSTALL_VERSEFLOW.bat intentionally configures npm to https://registry.npmjs.org/,
 downloads Node.js 22 LTS from https://nodejs.org/dist/, runs npm install, runs npm test,
 and stops before packaging if the tests fail.
+
+Updated: Bible source metadata test now matches the current GetBible JSON + damarals/biblias configuration.
