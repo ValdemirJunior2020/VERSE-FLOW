@@ -7,7 +7,7 @@ const { pathToFileURL } = require('url')
 const { VerseFlowDb } = require('./db.cjs')
 const { downloadRepoBible } = require('./repo-bibles.cjs')
 
-const bibleCatalog = require('../src/data/bible-catalog.json')
+const bibleCatalog = require('./bible-catalog.json')
 const bibleCatalogByCode = new Map(bibleCatalog.map(x => [String(x.code).toUpperCase(), x]))
 
 app.setAppUserModelId('com.verseflow.desktop')

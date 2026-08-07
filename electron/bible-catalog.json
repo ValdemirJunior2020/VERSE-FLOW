@@ -1,0 +1,206 @@
+[
+  {
+    "code": "AKJV",
+    "name": "American King James Version",
+    "language": "English",
+    "status": "download",
+    "license": "Public Domain",
+    "source": "GetBible v2 JSON",
+    "url": "https://api.getbible.net/v2/akjv.json"
+  },
+  {
+    "code": "ASV",
+    "name": "American Standard Version",
+    "language": "English",
+    "status": "download",
+    "license": "Public Domain",
+    "source": "GetBible v2 JSON",
+    "url": "https://api.getbible.net/v2/asv.json"
+  },
+  {
+    "code": "BBE",
+    "name": "Bible in Basic English",
+    "language": "English",
+    "status": "download",
+    "license": "Public Domain",
+    "source": "GetBible v2 JSON",
+    "url": "https://api.getbible.net/v2/basicenglish.json"
+  },
+  {
+    "code": "BISHOP",
+    "name": "Bishops' Bible",
+    "language": "English",
+    "status": "import",
+    "license": "Public Domain",
+    "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "CPDV",
+    "name": "Catholic Public Domain Version",
+    "language": "English",
+    "status": "import",
+    "license": "Public Domain",
+    "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "COVERDALE",
+    "name": "Miles Coverdale Bible",
+    "language": "English",
+    "status": "import",
+    "license": "Public Domain",
+    "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "DRV",
+    "name": "Douay-Rheims Bible Version",
+    "language": "English",
+    "status": "download",
+    "license": "Public Domain",
+    "source": "GetBible v2 JSON",
+    "url": "https://api.getbible.net/v2/douayrheims.json"
+  },
+  {
+    "code": "DARBY",
+    "name": "Darby Bible",
+    "language": "English",
+    "status": "import",
+    "license": "Public Domain",
+    "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "GENEVA",
+    "name": "Geneva Bible",
+    "language": "English",
+    "status": "import",
+    "license": "Public Domain",
+    "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "KJV",
+    "name": "King James Version",
+    "language": "English",
+    "status": "download",
+    "license": "Public Domain in the United States",
+    "source": "GetBible v2 JSON",
+    "url": "https://api.getbible.net/v2/kjv.json"
+  },
+  {
+    "code": "OEB",
+    "name": "Open English Bible (Commonwealth)",
+    "language": "English",
+    "status": "import",
+    "license": "Public Domain",
+    "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "RV",
+    "name": "Revised Version",
+    "language": "English",
+    "status": "import",
+    "license": "Public Domain",
+    "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "JPS1917",
+    "name": "Tanakh in English (JPS 1917)",
+    "language": "English",
+    "status": "import",
+    "license": "Public Domain",
+    "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "TRCBV",
+    "name": "Tyndale, Rogers, Coverdale Bible with variants",
+    "language": "English",
+    "status": "import",
+    "license": "Public Domain",
+    "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "WEB",
+    "name": "World English Bible",
+    "language": "English",
+    "status": "download",
+    "license": "Public Domain",
+    "source": "GetBible v2 JSON",
+    "url": "https://api.getbible.net/v2/web.json"
+  },
+  {
+    "code": "WEY",
+    "name": "Weymouth New Testament",
+    "language": "English",
+    "status": "import",
+    "license": "Public Domain",
+    "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "WTNT",
+    "name": "William Tyndale New Testament",
+    "language": "English",
+    "status": "import",
+    "license": "Public Domain",
+    "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "YLT",
+    "name": "Young's Literal Translation",
+    "language": "English",
+    "status": "import",
+    "license": "Public Domain",
+    "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "ALM1911",
+    "name": "Almeida 1911",
+    "language": "Português",
+    "status": "download",
+    "license": "Public Domain",
+    "source": "damarals/biblias",
+    "sourceType": "damaralsCanonical",
+    "repoTranslation": "ALM1911"
+  },
+  {
+    "code": "TB",
+    "name": "Tradução Brasileira",
+    "language": "Português",
+    "status": "download",
+    "license": "Public Domain (repository-marked)",
+    "source": "damarals/biblias",
+    "sourceType": "damaralsCanonical",
+    "repoTranslation": "TB"
+  },
+  {
+    "code": "BLIVRE",
+    "name": "Bíblia Livre",
+    "language": "Português",
+    "status": "download",
+    "license": "Public Domain / Livre",
+    "source": "damarals/biblias",
+    "sourceType": "damaralsCanonical",
+    "repoTranslation": "BLIVRE"
+  },
+  {
+    "code": "NIV",
+    "name": "New International Version",
+    "language": "English",
+    "status": "import",
+    "license": "Local import only",
+    "source": "User-provided local copy"
+  },
+  {
+    "code": "NKJV",
+    "name": "New King James Version",
+    "language": "English",
+    "status": "import",
+    "license": "Local import only",
+    "source": "User-provided local copy"
+  },
+  {
+    "code": "NVI",
+    "name": "Nova Versão Internacional",
+    "language": "Português",
+    "status": "import",
+    "license": "Local import only",
+    "source": "User-provided local copy"
+  }
+]

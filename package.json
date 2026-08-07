@@ -45,15 +45,25 @@
       "electron/**/*",
       "package.json",
       "node_modules/sql.js/**/*",
-      "src/data/sample-bible.json"
+      "src/data/**/*"
     ],
     "asarUnpack": [
       "node_modules/sql.js/dist/*.wasm"
     ],
     "win": {
       "target": [
-        { "target": "nsis", "arch": ["x64"] },
-        { "target": "portable", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "artifactName": "${productName}-${version}-${arch}.${ext}"
     },
