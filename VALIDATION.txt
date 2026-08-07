@@ -14,3 +14,5 @@ downloads Node.js 22 LTS from https://nodejs.org/dist/, runs npm install, runs n
 and stops before packaging if the tests fail.
 
 Updated: Bible source metadata test now matches the current GetBible JSON + damarals/biblias configuration.
+
+Updated UI theme: light beige background, off-white inputs/panels, charcoal text/icons, gold accents, red LIVE indicators.
