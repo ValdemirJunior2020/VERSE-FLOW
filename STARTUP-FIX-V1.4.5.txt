@@ -1,0 +1,6 @@
+VerseFlow V1.4.5 — installer test correction
+
+- Fixes the stale startup-safety test that still expected the removed withTimeout/10000 implementation.
+- The test now validates the V1.4.4+ Sunday-safe behavior: 6000 ms UI release, background data load, and non-blocking diagnostics.
+- No production startup behavior was reverted.
+- Display detector / TELAO safety remains included.

@@ -293,13 +293,13 @@ function denoExe() {
   const direct=firstExisting(candidates)
   if(direct)return direct
   try{
-    const out=String(execFileSync('where.exe',['deno.exe'],{encoding:'utf8',windowsHide:true,timeout:2500})).split(/\r?\n/).map(x=>x.trim()).find(Boolean)
+    const out=String(execFileSync('where.exe',['deno.exe'],{encoding:'utf8',windowsHide:true,timeout:2500,stdio:['ignore','pipe','ignore']})).split(/\r?\n/).map(x=>x.trim()).find(Boolean)
     return out&&fs.existsSync(out)?out:null
   }catch{return null}
 }
 
 function commandVersion(exe, args=['--version']) {
-  try { return String(execFileSync(exe,args,{encoding:'utf8',windowsHide:true,timeout:3500})).trim() }
+  try { return String(execFileSync(exe,args,{encoding:'utf8',windowsHide:true,timeout:3500,stdio:['ignore','pipe','ignore']})).trim() }
   catch { return '' }
 }
 
@@ -500,7 +500,17 @@ ipcMain.on('presentation:set',(_e,state)=>{
   broadcast(presentationState)
 })
 ipcMain.handle('presentation:get',()=>presentationState)
-ipcMain.handle('data:load',()=>db.loadAll())
+ipcMain.handle('data:load',()=>{
+  const started=Date.now()
+  try {
+    const result=db.loadAll()
+    console.log(`[VerseFlow] Startup data loaded in ${Date.now()-started} ms · ${result.verses.length} verses · ${result.songs.length} songs · ${result.media.length} media`)
+    return result
+  } catch(e) {
+    writeErrorLog('data-load',e?.message,e?.stack)
+    throw e
+  }
+})
 ipcMain.handle('data:upsert',(_e,{entity,value})=>{
   try{
     if(!allowedEntities.has(entity)) throw new Error('Entity not allowed')

@@ -14,9 +14,11 @@ describe('Sunday-safe startup', () => {
 
   it('does not remain on the loading screen forever if local data cannot load', () => {
     const hook = fs.readFileSync(path.join(root, 'src', 'hooks', 'useVerseFlowData.ts'), 'utf8')
-    expect(hook).toContain('withTimeout')
-    expect(hook).toContain('10000')
-    expect(hook).toContain('finally')
+    expect(hook).toContain('STARTUP_TIMEOUT_MS = 6000')
+    expect(hook).toContain('window.setTimeout')
     expect(hook).toContain('setLoading(false)')
+    expect(hook).toContain('await loadPromise')
+    expect(hook).toContain('void window.verseflow?.logError')
+    expect(hook).toContain('finally')
   })
 })
