@@ -1,0 +1,6 @@
+VerseFlow V1.4.6 - Sunday-safe non-blocking startup
+
+The operator interface no longer waits for SQLite/local data before opening.
+Bible, songs, media, services, themes and settings load in the background.
+A slow or failed data:load IPC call cannot keep VerseFlow on the Loading screen.
+Diagnostics remain best-effort and are never awaited during startup.
