@@ -1,0 +1,9 @@
+VERSEFLOW V1.4.3 - STARTUP SAFETY FIX
+
+Fixed: EADDRINUSE 127.0.0.1:35677 no longer crashes the Electron main process.
+The Companion API is optional; if its port is busy, VerseFlow continues normally.
+
+Fixed: startup data loading now has a 10-second safety timeout, so a failed IPC/database
+request cannot leave the operator on the Loading VerseFlow screen forever.
+
+The TELAO detector and V1.4.2 display protections are preserved.

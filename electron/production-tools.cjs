@@ -340,7 +340,7 @@ function renderHyperframes(app){
 
 function startCompanionApi(getControlWindow,getPresentationState,broadcast){
   if(companionServer)return
-  companionServer=http.createServer((req,res)=>{
+  const server=http.createServer((req,res)=>{
     const u=new URL(req.url||'/',`http://127.0.0.1:${COMPANION_PORT}`)
     const action=u.pathname.replace(/^\/+/,'').toLowerCase()
     res.setHeader('Access-Control-Allow-Origin','*')
@@ -365,7 +365,22 @@ function startCompanionApi(getControlWindow,getPresentationState,broadcast){
     }
     res.end(JSON.stringify({ok:true,action}))
   })
-  companionServer.listen(COMPANION_PORT,'127.0.0.1')
+  // The Companion API is optional. A stale VerseFlow process or another local
+  // service may already own this port. Never let that prevent VerseFlow from
+  // starting or leave the operator stuck on the loading screen.
+  server.on('error',err=>{
+    if(err && err.code==='EADDRINUSE'){
+      console.warn(`[VerseFlow] Companion API port ${COMPANION_PORT} is already in use. Continuing without Companion API.`)
+    }else{
+      console.error('[VerseFlow] Companion API error:',err)
+    }
+    if(companionServer===server) companionServer=null
+    try{server.close()}catch{}
+  })
+  server.listen(COMPANION_PORT,'127.0.0.1',()=>{
+    console.log(`[VerseFlow] Companion API ready on 127.0.0.1:${COMPANION_PORT}`)
+  })
+  companionServer=server
 }
 
 function registerProductionTools({app,ipcMain,shell,clipboard,getControlWindow}){
