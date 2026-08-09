@@ -95,3 +95,23 @@ Images and videos can be sent live without building a service.
 YouTube links open inside VerseFlow using the standard embedded player.
 YouTube advertising is controlled by YouTube and is not bypassed by VerseFlow.
 Text color and reference/accent color can be changed with color pickers in Properties.
+
+## Full offline Bible pack
+
+VerseFlow now ships with 18 user-supplied complete Genesis-to-Revelation Bible editions across English, Portuguese, Spanish and Hebrew. Open Bible → Bibles and click Install. These bundled editions do not require internet access.
+
+
+## Smart Presenter (optional local AI)
+
+Run `INSTALL_OPTIONAL_OPEN_SOURCE_TOOLS.bat` to install Ollama with the lightweight `qwen3:0.6b` model and/or the official Windows `yt-dlp.exe`. Live Desk has a Smart tab with safe Preview/Live action planning. AI never rewrites Scripture; Bible text always comes from the local VerseFlow Bible database.
+
+The top toolbar Search, New Slide, Import, and Undo controls are functional in this build. Bible now has Translation → Book → Chapter navigation and direct Preview/LIVE buttons.
+
+
+## VerseFlow V3 — Multilingual Production Center
+
+English remains the default interface. The top toolbar includes one-click English, Brazilian Portuguese and Spanish language controls, including the supplied Brazilian flag image.
+
+Production Control integrates optional mpv, FFmpeg, whisper.cpp, OBS Studio/obs-websocket, HyperFrames, Bitfocus Companion, Ollama and yt-dlp + Deno. Live Desk includes custom text, full offline Bibles, songs, images/video/audio, YouTube, Smart Presenter, lower thirds and timers. A persistent Quick Bar keeps emergency/live controls available.
+
+Auto Scripture Follow is preview-only and resolves exact locally stored Scripture. Optional integrations never become a dependency of the core presentation engine.

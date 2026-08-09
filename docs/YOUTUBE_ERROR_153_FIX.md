@@ -15,3 +15,11 @@ This build:
 
 This does not bypass YouTube advertising, account restrictions, or videos whose
 owners disabled embedding.
+
+
+## Startup correction
+
+A previous build defined `configureYouTubeRequestIdentity()` but did not invoke it
+because its `app.whenReady().then(async()=>{` formatting did not match the patch
+pattern. This build explicitly calls the function at the beginning of the
+Electron ready block and includes a regression test for the startup call.

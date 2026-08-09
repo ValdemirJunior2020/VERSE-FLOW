@@ -1,18 +1,24 @@
-VerseFlow V1 validation notes
+VerseFlow V3 validation notes
 
 Checks completed in the build workspace:
 - package.json parses as valid JSON.
-- sample Bible JSON parses as valid JSON.
+- All 18 bundled full Bible files parse and contain >30,000 verses, begin at chapter 1 verse 1, and end at Revelation 22:21.
 - electron/main.cjs passes node --check.
 - electron/preload.cjs passes node --check.
-- electron/db.cjs passes node --check.
-- TypeScript/TSX parser check returned no code diagnostics after excluding missing dependency/type errors.
-- Public npm installation could not be executed in this workspace because the environment forces an internal npm mirror that returned 404 for React type packages.
+- electron/production-tools.cjs passes node --check.
+- TypeScript/TSX syntax scan reports no TS1xxx parser diagnostics.
+- Static regression assertions passed for:
+  * English default + Brazilian Portuguese + Spanish UI switching.
+  * supplied Brazilian flag asset.
+  * no-translate protection for Scripture/live presentation content.
+  * mpv, FFmpeg, whisper.cpp, OBS, HyperFrames, Companion IPC wiring.
+  * Smart Presenter timer/lower-third/stop-audio actions.
+  * yt-dlp + Deno installer wiring.
+  * YouTube localhost HTTP origin/referrer architecture.
+  * secure verseflow-media streaming protocol for local media.
+  * 18 bundled Genesis-to-Revelation Bible editions.
+- All TSX button elements were statically audited: no button tag lacks an action handler.
 
-The included INSTALL_VERSEFLOW.bat intentionally configures npm to https://registry.npmjs.org/,
-downloads Node.js 22 LTS from https://nodejs.org/dist/, runs npm install, runs npm test,
-and stops before packaging if the tests fail.
+The full npm/Vitest/Vite/Electron Windows build was not executed in this workspace because node_modules is not present here. Run INSTALL_VERSEFLOW.bat or `npm install`, `npm test`, and `npm run build` on Windows for the final environment-specific check.
 
-Updated: Bible source metadata test now matches the current GetBible JSON + damarals/biblias configuration.
-
-Updated UI theme: light beige background, off-white inputs/panels, charcoal text/icons, gold accents, red LIVE indicators.
+Windows packaging helper now kills stale VerseFlow/Electron processes and falls back to a timestamped release folder if an old release directory is locked.

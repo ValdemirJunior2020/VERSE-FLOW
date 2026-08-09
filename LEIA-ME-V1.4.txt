@@ -1,0 +1,39 @@
+VERSEFLOW 1.4 — GUIA RÁPIDO PARA QUEM VAI OPERAR NO CULTO
+
+1. Abra o VerseFlow normalmente.
+2. Olhe no topo:
+   SYSTEM OK = o núcleo do programa está pronto.
+   CHECK SYSTEM = clique nesse botão. O VerseFlow vai mostrar o que precisa de atenção.
+
+BÍBLIA OU LETRA COM FUNDO
+- Abra Bible, Songs ou Live Desk.
+- Em Backgrounds, clique em um dos 12 fundos incluídos.
+- O versículo ou a letra NÃO some. O fundo entra atrás do texto.
+- Para usar uma foto/vídeo seu como fundo, importe e escolha USE AS BG.
+- FULLSCREEN é diferente: mostra a foto/vídeo sozinho na tela.
+
+MÚSICA JUNTO COM VERSÍCULO OU LETRA
+- Importe o arquivo de áudio.
+- Use ADD MUSIC para manter o texto/fundo e adicionar a música.
+- Em Background music você também pode escolher a música e marcar Loop music.
+- PLAY NOW toca o áudio imediatamente sem transformar o arquivo em fundo.
+
+SE ALGUMA COISA DER ERRO
+- O VerseFlow agora salva o erro automaticamente num relatório local.
+- Se a interface travar, aparece uma tela amigável em vez de somente uma tela branca.
+- Clique Try Again / Tentar novamente ou feche e abra o programa.
+- Seus dados não são apagados por essa tela de erro.
+
+PARA QUEM DESENVOLVE O VERSEFLOW
+- CHECK_VERSEFLOW.bat roda testes, build e o teste automático Playwright/Electron.
+- .clinerules/verseflow.md contém regras para o Cline não quebrar o fluxo principal.
+- FFmpeg continua como Media Doctor opcional para vídeos difíceis.
+
+
+V1.4.2 - DETECTOR DE TELAO
+- Settings > IDENTIFICAR TELAS mostra um numero gigante em cada tela por 7 segundos.
+- Escolha a tela do telão em TELAO (Audience).
+- VerseFlow salva a escolha e tenta reconectar automaticamente ao abrir.
+- TELAO CONECTADO aparece no topo quando a tela salva esta presente.
+- Se a tela salva sumir, o LIVE e bloqueado em vez de cair no monitor do operador.
+- Para video wall 3x3 com controlador, as 9 TVs aparecem como uma unica tela e o VerseFlow envia uma unica janela fullscreen.

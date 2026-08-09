@@ -1,33 +1,37 @@
 import { describe, expect, it } from 'vitest'
 
 describe('Bible source metadata', () => {
-  it('catalog contains working English and Portuguese Bible sources', async () => {
+  it('catalog contains working bundled English and Portuguese Bible sources', async () => {
     const catalog = (await import('./data/bible-catalog.json')).default as any[]
 
-    // English automatic installs now use reliable full-Bible JSON.
+    // KJV is now bundled offline inside VerseFlow instead of downloaded from GetBible.
     expect(catalog.some(x =>
       x.code === 'KJV' &&
       x.status === 'download' &&
-      x.source === 'GetBible v2 JSON'
+      x.source === 'Bible SuperSearch export · bundled offline' &&
+      x.bundledFile
     )).toBe(true)
 
-    // Portuguese public-domain installs remain sourced from damarals/biblias.
-    expect(catalog.some(x =>
-      x.code === 'ALM1911' &&
-      x.status === 'download' &&
-      x.source === 'damarals/biblias'
-    )).toBe(true)
-
-    expect(catalog.some(x =>
-      x.code === 'TB' &&
-      x.status === 'download' &&
-      x.source === 'damarals/biblias'
-    )).toBe(true)
-
+    // Portuguese bundled editions from the user-supplied full Bible pack.
     expect(catalog.some(x =>
       x.code === 'BLIVRE' &&
       x.status === 'download' &&
-      x.source === 'damarals/biblias'
+      x.source === 'Bible SuperSearch export · bundled offline' &&
+      x.bundledFile
+    )).toBe(true)
+
+    expect(catalog.some(x =>
+      x.code === 'ALMEIDA-RA' &&
+      x.status === 'download' &&
+      x.source === 'Bible SuperSearch export · bundled offline' &&
+      x.bundledFile
+    )).toBe(true)
+
+    expect(catalog.some(x =>
+      x.code === 'ALMEIDA-RC' &&
+      x.status === 'download' &&
+      x.source === 'Bible SuperSearch export · bundled offline' &&
+      x.bundledFile
     )).toBe(true)
   })
 })

@@ -9,12 +9,14 @@ const initial: PresentationState = {
 
 function mediaUrl(path?: string) {
   if (!path) return ''
-  return path.startsWith('file://') ? path : `file:///${path.replace(/\\/g, '/')}`
+  if(path.startsWith('http://')||path.startsWith('https://')||path.startsWith('verseflow-media://')||path.startsWith('data:')||path.startsWith('blob:')) return path
+  return `verseflow-media://local/${encodeURIComponent(path)}`
 }
 
 export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
   const [state, setState] = useState<PresentationState>(initial)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const audioRef = useRef<HTMLAudioElement>(null)
   const [now, setNow] = useState(new Date())
 
   useEffect(() => {
@@ -25,10 +27,10 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
   }, [])
 
   useEffect(() => {
-    if (!stage) return
-    const t=setInterval(()=>setNow(new Date()),1000)
+    if (!stage && state.layout!=='countdown') return
+    const t=setInterval(()=>setNow(new Date()),500)
     return()=>clearInterval(t)
-  }, [stage])
+  }, [stage,state.layout,state.timerEndAt])
 
   useEffect(() => {
     const v=videoRef.current, c=state.video
@@ -38,27 +40,35 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
     if(c.playing) v.play().catch(()=>{}); else v.pause()
   }, [state.video?.playing,state.video?.muted,state.video?.volume,state.video?.loop,state.video?.commandId])
 
+  useEffect(() => {
+    const a=audioRef.current,c=state.audio
+    if(!a||!c)return
+    a.volume=Math.max(0,Math.min(1,c.volume));a.loop=c.loop
+    if(c.playing)a.play().catch(()=>{});else a.pause()
+  },[state.audio?.path,state.audio?.playing,state.audio?.volume,state.audio?.loop])
+
   const bg = useMemo(() => mediaUrl(state.background), [state.background])
   const align = state.theme.alignment || 'center'
+  const audioNode=state.audio?.path?<audio ref={audioRef} src={mediaUrl(state.audio.path)} autoPlay />:null
 
   if (stage) {
-    return <div className="stage-output">
+    return <div className="stage-output" data-no-translate="true">
       <div className="stage-clock">{now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
       <div className="stage-label">CURRENT</div>
       <div className="stage-current">{state.reference || state.title || 'Ready'}</div>
-      <div className="stage-text">{state.clearText ? '' : state.text}</div>
+      <div className="stage-text">{state.layout==='countdown'?`${state.timerLabel||'Service starts in'} ${(()=>{const sec=Math.max(0,Math.ceil(((state.timerEndAt||Date.now())-now.getTime())/1000));return `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`})()}`:(state.clearText?'':state.text)}</div>
       <div className="stage-next"><span>NEXT</span>{state.nextTitle || '—'}</div>
       {state.notes && <div className="stage-notes">{state.notes}</div>}
     </div>
   }
 
-  if (state.black) return <div className="audience-output black-screen" />
+  if (state.black) return <div className="audience-output black-screen" data-no-translate="true">{audioNode}</div>
   if (state.youtubeId) {
     const autoplay = state.youtubeAutoplay ? 1 : 0
-    return <div className="audience-output youtube-output">
+    return <div className="audience-output youtube-output" data-no-translate="true">
       <iframe
         className="audience-youtube"
-        src={`https://www.youtube-nocookie.com/embed/${state.youtubeId}?autoplay=${autoplay}&rel=0&controls=1&modestbranding=1&origin=https%3A%2F%2Fverseflow.app&widget_referrer=https%3A%2F%2Fverseflow.app%2F`}
+        src={`https://www.youtube-nocookie.com/embed/${state.youtubeId}?autoplay=${autoplay}&rel=0&controls=1&modestbranding=1&origin=${encodeURIComponent(window.location.origin)}&widget_referrer=${encodeURIComponent(window.location.href)}`}
         title="VerseFlow YouTube"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         referrerPolicy="strict-origin-when-cross-origin"
@@ -67,16 +77,19 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
     </div>
   }
 
-  if (state.logo) return <div className="audience-output logo-screen"><div className="vf-logo-mark">VF</div><div>VERSEFLOW</div></div>
+  if (state.logo) return <div className="audience-output logo-screen" data-no-translate="true">{audioNode}<div className="vf-logo-mark">VF</div><div>VERSEFLOW</div></div>
 
-  return <div className="audience-output" style={{
+  return <div className="audience-output" data-no-translate="true" style={{
     backgroundImage: state.backgroundType === 'image' && bg ? `linear-gradient(rgba(0,0,0,${state.theme.overlay}),rgba(0,0,0,${state.theme.overlay})), url("${bg}")` : undefined,
-    backgroundColor: '#080808'
+    backgroundColor: state.backgroundType === 'solid' ? '#f7f0e4' : '#080808'
   }}>
+    {audioNode}
     {state.backgroundType === 'video' && bg && <video ref={videoRef} className="audience-video" src={bg} autoPlay loop muted />}
-    <div className={`audience-copy align-${align}`} style={{fontFamily: state.theme.fontFamily, color: state.theme.textColor}}>
-      {!state.clearText && <div className="audience-text" style={{fontSize: `${state.theme.fontSize}px`}}>{state.text}</div>}
-      {!state.clearText && state.reference && <div className="audience-reference" style={{color: state.theme.accentColor}}>{state.reference}</div>}
+    <div className={`audience-copy align-${align} layout-${state.layout||'center'}`} style={{fontFamily: state.theme.fontFamily, color: state.theme.textColor}}>
+      {state.layout==='countdown' ? <div className="audience-countdown"><span>{state.timerLabel||'Service starts in'}</span><strong>{(()=>{const sec=Math.max(0,Math.ceil(((state.timerEndAt||Date.now())-now.getTime())/1000));return `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`})()}</strong></div> : <>
+        {!state.clearText && <div className="audience-text" style={{fontSize: `${state.theme.fontSize}px`}}>{state.text}</div>}
+        {!state.clearText && state.reference && <div className="audience-reference" style={{color: state.theme.accentColor}}>{state.reference}</div>}
+      </>}
     </div>
   </div>
 }

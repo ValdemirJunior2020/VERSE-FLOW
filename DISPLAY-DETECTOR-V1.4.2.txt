@@ -1,0 +1,20 @@
+VERSEFLOW V1.4.2 - DETECTOR DE TELAO
+
+COMO USAR
+1. Conecte o computador normalmente ao sistema das 9 TVs.
+2. Abra VerseFlow > Settings.
+3. Clique IDENTIFICAR TELAS.
+4. Um numero grande aparece em cada tela por 7 segundos.
+5. Veja qual numero aparece no telao 3x3 e escolha essa Tela em TELAO (Audience).
+6. Clique TESTAR TELAO.
+7. Depois disso o VerseFlow salva a escolha e tenta reconectar automaticamente ao abrir.
+
+SEGURANCA
+- O topo mostra TELAO CONECTADO ou SEM TELAO.
+- LIVE nao e enviado se a tela salva estiver desconectada.
+- Se houver mais de uma tela, LIVE e bloqueado se o monitor principal/operador for escolhido por engano.
+- Se o telao for removido durante o uso, a janela Audience e fechada e nao migra silenciosamente para o monitor principal.
+- O System Check verifica se o TELAO salvo esta conectado.
+
+VIDEO WALL 3x3
+Se o controlador das nove TVs de 55 polegadas apresenta o conjunto ao Windows como uma unica tela, o VerseFlow detecta o conjunto como uma tela e abre uma unica janela fullscreen nela. O controlador divide a imagem entre as nove TVs.

@@ -11,7 +11,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\install-versef
 if errorlevel 1 (
   echo.
   echo INSTALL FAILED.
-  echo You can try DEV_VERSEFLOW.bat after checking your internet connection.
+  echo The installer stopped. Read the error shown above.
+echo If package installation already passed, this is NOT automatically an internet problem.
   pause
   exit /b 1
 )

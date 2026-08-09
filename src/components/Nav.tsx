@@ -1,4 +1,4 @@
-import { BookOpen, Gauge, Images, ListMusic, MonitorPlay, Palette, Settings, SquarePlay, Music2 } from 'lucide-react'
+import { BookOpen, Gauge, Images, ListMusic, MonitorPlay, Palette, Settings, SquarePlay, Music2, SlidersHorizontal } from 'lucide-react'
 import type { ModuleKey } from '../types'
 
 const items: {key:ModuleKey; label:string; icon:any}[] = [
@@ -9,6 +9,7 @@ const items: {key:ModuleKey; label:string; icon:any}[] = [
   {key:'playlists',label:'Playlists',icon:ListMusic},
   {key:'present',label:'Live Desk',icon:MonitorPlay},
   {key:'themes',label:'Themes',icon:Palette},
+  {key:'production',label:'Production',icon:SlidersHorizontal},
   {key:'settings',label:'Settings',icon:Settings},
 ]
 

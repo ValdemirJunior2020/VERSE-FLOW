@@ -7,9 +7,13 @@ export const defaultTheme: Theme = {
   fontSize: 64,
   alignment: 'center',
   overlay: 0.54,
-  textColor: '#f4f2ed',
-  accentColor: '#d7a640',
+  textColor: '#2f3133',
+  accentColor: '#c89a32',
   transition: 'fade'
+}
+
+export function cleanStrongMarkers(text: string) {
+  return text.replace(/\{[GH]\d+\}/gi, '').replace(/\s+([,.;:!?])/g, '$1').replace(/\s{2,}/g, ' ').trim()
 }
 
 export function verseToServiceItem(v: Verse): ServiceItem {
@@ -18,7 +22,7 @@ export function verseToServiceItem(v: Verse): ServiceItem {
     type: 'scripture',
     title: `${v.book} ${v.chapter}:${v.verse}`,
     subtitle: v.translation,
-    payload: { text: v.text, reference: `${v.book} ${v.chapter}:${v.verse}` }
+    payload: { text: v.translation.includes('STRONGS') ? cleanStrongMarkers(v.text) : v.text, reference: `${v.book} ${v.chapter}:${v.verse}` }
   }
 }
 
@@ -46,6 +50,7 @@ export function itemToPresentation(item: ServiceItem | undefined, next: ServiceI
     logo: false,
     frozen: false,
     notes: typeof p.notes === 'string' ? p.notes : '',
+    audio: typeof p.audioPath === 'string' ? {path:p.audioPath,playing:true,volume:Number(p.audioVolume ?? .85),loop:Boolean(p.audioLoop)} : undefined,
     video: {playing:true,muted:true,volume:0.8,loop:true}
   }
 }

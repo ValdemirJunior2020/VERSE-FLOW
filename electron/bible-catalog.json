@@ -13,9 +13,45 @@
     "name": "American Standard Version",
     "language": "English",
     "status": "download",
-    "license": "Public Domain",
-    "source": "GetBible v2 JSON",
-    "url": "https://api.getbible.net/v2/asv.json"
+    "license": "This Bible is in the Public Domain.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "asv.json"
+  },
+  {
+    "code": "ASV-STRONGS",
+    "name": "American Standard Version w Strong's",
+    "language": "English",
+    "status": "download",
+    "license": "This Bible is in the Public Domain.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "asv_strongs.json"
+  },
+  {
+    "code": "KJV",
+    "name": "Authorized King James Version",
+    "language": "English",
+    "status": "download",
+    "license": "This Bible is in the Public Domain in most parts of the world. However, in the United Kingdom, it is under perpetual Crown copyright.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "kjv.json"
+  },
+  {
+    "code": "KJVPCE",
+    "name": "Authorized King James Version - PCE",
+    "language": "English",
+    "status": "download",
+    "license": "This Bible is in the Public Domain in most parts of the world. However, in the United Kingdom, it is under perpetual Crown copyright.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "kjvpce.json"
+  },
+  {
+    "code": "KJV-STRONGS",
+    "name": "Authorized King James Version w Strong's",
+    "language": "English",
+    "status": "download",
+    "license": "This Bible is in the Public Domain in most parts of the world. However, in the United Kingdom, it is under perpetual Crown copyright.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "kjv_strongs.json"
   },
   {
     "code": "BBE",
@@ -25,6 +61,15 @@
     "license": "Public Domain",
     "source": "GetBible v2 JSON",
     "url": "https://api.getbible.net/v2/basicenglish.json"
+  },
+  {
+    "code": "BISHOPS",
+    "name": "Bishops Bible",
+    "language": "English",
+    "status": "download",
+    "license": "This Bible is in the Public Domain.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "bishops.json"
   },
   {
     "code": "BISHOP",
@@ -44,7 +89,16 @@
   },
   {
     "code": "COVERDALE",
-    "name": "Miles Coverdale Bible",
+    "name": "Coverdale Bible",
+    "language": "English",
+    "status": "download",
+    "license": "This Bible is in the Public Domain.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "coverdale.json"
+  },
+  {
+    "code": "DARBY",
+    "name": "Darby Bible",
     "language": "English",
     "status": "import",
     "license": "Public Domain",
@@ -60,29 +114,38 @@
     "url": "https://api.getbible.net/v2/douayrheims.json"
   },
   {
-    "code": "DARBY",
-    "name": "Darby Bible",
-    "language": "English",
-    "status": "import",
-    "license": "Public Domain",
-    "source": "public-domain-bibles/english (local import until parser is verified)"
-  },
-  {
     "code": "GENEVA",
     "name": "Geneva Bible",
     "language": "English",
-    "status": "import",
-    "license": "Public Domain",
-    "source": "public-domain-bibles/english (local import until parser is verified)"
+    "status": "download",
+    "license": "This Bible is in the Public Domain.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "geneva.json"
   },
   {
-    "code": "KJV",
-    "name": "King James Version",
+    "code": "NET",
+    "name": "NET Bible®",
     "language": "English",
     "status": "download",
-    "license": "Public Domain in the United States",
-    "source": "GetBible v2 JSON",
-    "url": "https://api.getbible.net/v2/kjv.json"
+    "license": "NET Bible® http://netbible.com copyright ©1996, 2016 used with permission from Biblical Studies Press, L.L.C. All rights reserved.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "net.json"
+  },
+  {
+    "code": "NIV",
+    "name": "New International Version",
+    "language": "English",
+    "status": "import",
+    "license": "Local import only",
+    "source": "User-provided local copy"
+  },
+  {
+    "code": "NKJV",
+    "name": "New King James Version",
+    "language": "English",
+    "status": "import",
+    "license": "Local import only",
+    "source": "User-provided local copy"
   },
   {
     "code": "OEB",
@@ -117,15 +180,6 @@
     "source": "public-domain-bibles/english (local import until parser is verified)"
   },
   {
-    "code": "WEB",
-    "name": "World English Bible",
-    "language": "English",
-    "status": "download",
-    "license": "Public Domain",
-    "source": "GetBible v2 JSON",
-    "url": "https://api.getbible.net/v2/web.json"
-  },
-  {
     "code": "WEY",
     "name": "Weymouth New Testament",
     "language": "English",
@@ -142,12 +196,57 @@
     "source": "public-domain-bibles/english (local import until parser is verified)"
   },
   {
+    "code": "WEB",
+    "name": "World English Bible",
+    "language": "English",
+    "status": "download",
+    "license": "This Bible is in the Public Domain.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "web.json"
+  },
+  {
     "code": "YLT",
     "name": "Young's Literal Translation",
     "language": "English",
     "status": "import",
     "license": "Public Domain",
     "source": "public-domain-bibles/english (local import until parser is verified)"
+  },
+  {
+    "code": "RV1909",
+    "name": "Reina Valera 1909",
+    "language": "Español",
+    "status": "download",
+    "license": "This Bible is in the Public Domain.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "rv1909.json"
+  },
+  {
+    "code": "RVG",
+    "name": "Reina Valera Gómez",
+    "language": "Español",
+    "status": "download",
+    "license": "DERECHOS RESERVADOS Rights Reserved Copyright 2010 By Dr. Humberto Gómez Caballero. Iglesia Bautista Libertad de Matamoros Tam. México. P.O. Box 868 Brownsville, Tx 78522 Estados Unidos de América. E Mail humbertogoca@prodigy.net.mx Ph. (956)867-1281 Ph, en Mexico 011-52-8688-140352 Totalmente prohibido imprimirlo, o reproducirlo con fines de lucro. Los derechos reservados no están de venta y son sólo para ampararnos de cualquier organización, o persona que quisiera adueñarse de ella. Toda Iglesia u organización que desee imprimirla o reproducirla para su distribución gratuita tendrá la plena libertad de hacerlo sin necesidad de pagar regalías, siempre y cuando no cambie ninguna de las palabras escritas. Completly prohibited to print, or reproduce the text for the purpose of profit. The rights reserved are not for sale, and are only to protect us against any organization, or person that wants to take possession of the text. All Churches or organizations that want to print or reproduce it for free distribution have the clear liberty to do so without need to pay royalties, always and when they do not change any of the written words.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "rvg.json"
+  },
+  {
+    "code": "RV1909-STRONGS",
+    "name": "Reina-Valera 1909 w/Strong's",
+    "language": "Español",
+    "status": "download",
+    "license": "This Bible is in the Public Domain.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "rv1909_strongs.json"
+  },
+  {
+    "code": "SAGRADAS",
+    "name": "Sagradas Escrituras",
+    "language": "Español",
+    "status": "download",
+    "license": "This Bible is in the Public Domain.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "sagradas.json"
   },
   {
     "code": "ALM1911",
@@ -160,6 +259,23 @@
     "repoTranslation": "ALM1911"
   },
   {
+    "code": "BLIVRE",
+    "name": "Biblia Livre",
+    "language": "Português",
+    "status": "download",
+    "license": "This Bible is made available under the terms of the Creative Commons Attribution 3.0 Brazil License (CC BY 3.0 BR) license. This work has been reformated to work with Bible SuperSearch However, no changes to the text or punctuation have been made.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "blivre.json"
+  },
+  {
+    "code": "NVI",
+    "name": "Nova Versão Internacional",
+    "language": "Português",
+    "status": "import",
+    "license": "Local import only",
+    "source": "User-provided local copy"
+  },
+  {
     "code": "TB",
     "name": "Tradução Brasileira",
     "language": "Português",
@@ -170,37 +286,30 @@
     "repoTranslation": "TB"
   },
   {
-    "code": "BLIVRE",
-    "name": "Bíblia Livre",
+    "code": "ALMEIDA-RA",
+    "name": "Tradução de João Ferreira de Almeida (Versão Revista e Atualizada)",
     "language": "Português",
     "status": "download",
-    "license": "Public Domain / Livre",
-    "source": "damarals/biblias",
-    "sourceType": "damaralsCanonical",
-    "repoTranslation": "BLIVRE"
+    "license": "This Bible is in the Public Domain.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "almeida_ra.json"
   },
   {
-    "code": "NIV",
-    "name": "New International Version",
-    "language": "English",
-    "status": "import",
-    "license": "Local import only",
-    "source": "User-provided local copy"
-  },
-  {
-    "code": "NKJV",
-    "name": "New King James Version",
-    "language": "English",
-    "status": "import",
-    "license": "Local import only",
-    "source": "User-provided local copy"
-  },
-  {
-    "code": "NVI",
-    "name": "Nova Versão Internacional",
+    "code": "ALMEIDA-RC",
+    "name": "Tradução de João Ferreira de Almeida Revista e Corrigida.",
     "language": "Português",
-    "status": "import",
-    "license": "Local import only",
-    "source": "User-provided local copy"
+    "status": "download",
+    "license": "This Bible is in the Public Domain.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "almeida_rc.json"
+  },
+  {
+    "code": "HE-MODERN",
+    "name": "תנ ך עברי מודרני",
+    "language": "עברית",
+    "status": "download",
+    "license": "This Bible is in the Public Domain.",
+    "source": "Bible SuperSearch export · bundled offline",
+    "bundledFile": "he_modern.json"
   }
 ]
