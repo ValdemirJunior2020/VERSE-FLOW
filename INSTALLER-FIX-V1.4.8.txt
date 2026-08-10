@@ -1,0 +1,8 @@
+VerseFlow V1.4.8 - SYSTEM NODE AWARE INSTALLER
+
+- If node AND npm already work on Windows PATH, installer uses them and skips all Node downloads.
+- Clean PCs still get Node.js 22 LTS automatically.
+- Portable Node is stored under LocalAppData\VerseFlowRuntime, not inside a deeply nested Downloads folder.
+- Prevents Windows long-path failures in npm's nested @sigstore files.
+- DEV_VERSEFLOW.bat follows the same system-first behavior.
+- VerseFlow application code/features are unchanged from the working V1.4.6 base.

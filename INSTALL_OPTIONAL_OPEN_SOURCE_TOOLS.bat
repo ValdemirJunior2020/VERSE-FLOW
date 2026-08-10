@@ -120,6 +120,13 @@ if not errorlevel 1 (
   set "NPM_CMD=npm"
   exit /b 0
 )
+if exist "%~dp0.runtime\node-path.txt" (
+  set /p "VF_NODEDIR="<"%~dp0.runtime\node-path.txt"
+  if not "!VF_NODEDIR!"=="" if /I not "!VF_NODEDIR!"=="SYSTEM" if exist "!VF_NODEDIR!\npm.cmd" (
+    set "NPM_CMD=!VF_NODEDIR!\npm.cmd"
+    exit /b 0
+  )
+)
 if exist "%~dp0.runtime\node\npm.cmd" (
   set "NPM_CMD=%~dp0.runtime\node\npm.cmd"
   exit /b 0
