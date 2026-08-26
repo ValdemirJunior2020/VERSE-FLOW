@@ -19,7 +19,7 @@ describe('Smart Presenter tools', () => {
     expect(app).toContain('onClick={newSlide}')
     expect(app).toContain('onClick={globalImport}')
     expect(app).toContain('onClick={undoPresentation}')
-    expect(app).toContain("if(e.key==='Enter')globalSearch()")
+    expect(app).toContain("if(e.key==='Enter')void globalSearch()")
   })
 
   it('keeps Scripture exact by having AI return references only', () => {
