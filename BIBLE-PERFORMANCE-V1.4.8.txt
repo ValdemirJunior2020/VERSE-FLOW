@@ -1,0 +1,9 @@
+VerseFlow 1.4.8 - Bible performance update
+
+- Keeps Electron and all existing VerseFlow features.
+- Bible page no longer scans every loaded verse when the page opens.
+- Added a dedicated Electron IPC query that loads verses only for the selected translation.
+- Shows a visible "Loading Bible..." state instead of appearing frozen on slower PCs.
+- Translation changes load only that translation.
+- Bundled offline Bibles and the existing install/import flow are unchanged.
+- Restored src/data/bible-catalog.json for the existing Bible tests.

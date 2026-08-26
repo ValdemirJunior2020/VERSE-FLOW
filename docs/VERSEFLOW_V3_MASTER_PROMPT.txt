@@ -1,0 +1,208 @@
+VERSEFLOW V3 — MASTER BUILD PROMPT
+
+Build VerseFlow as a production-quality Windows church presentation and media-control application designed for live worship services. Reliability during a service is the highest priority. The core app must work offline and must never depend on AI, cloud services, YouTube, OBS, or any optional open-source tool just to display Bible verses, songs, images, videos, audio, custom text, timers, or stage/audience output.
+
+MISSION
+Create a fast, calm, operator-friendly presentation system that lets a church display anything at any time without forcing the operator to build a service first. Service playlists remain optional. The primary workflow is Library/Search → Preview → Live.
+
+PLATFORM AND SECURITY
+- Windows-first Electron desktop application with React + Vite + TypeScript.
+- One secure control BrowserWindow plus separate borderless fullscreen Audience and Stage windows.
+- Use screen.getAllDisplays() and let the operator choose outputs.
+- contextIsolation=true, nodeIntegration=false, webSecurity=true.
+- Keep privileged OS operations behind a narrow preload IPC bridge.
+- Packaged renderer should use a localhost HTTP origin when needed for safe web embeds such as YouTube.
+- Local images/video/audio must use a dedicated secure streaming protocol rather than weakening webSecurity.
+- Companion HTTP control must bind to 127.0.0.1 only.
+
+LANGUAGES
+- English is the default interface language.
+- Add one-click language controls in the top toolbar:
+  1. United States flag → English
+  2. Brazilian flag → Brazilian Portuguese (pt-BR)
+  3. Spanish flag → Spanish
+- Persist the selected UI language locally.
+- Translate the application interface only. NEVER automatically translate, paraphrase, correct, or edit Scripture, song lyrics, imported text, or live presentation content.
+- Bible language/version is controlled by the Bible translation selector, not by the UI language switch.
+
+LIVE DESK
+The main operator page must allow direct presenting without a playlist. Tabs:
+- Text
+- Bible
+- Songs
+- Media
+- YouTube
+- Smart Presenter
+- Lower Third
+- Timer
+
+Every content type should support Preview and Live where appropriate.
+
+BIBLE
+- Keep all bundled full offline Bible editions from Genesis through Revelation.
+- Translation → Book → Chapter navigation plus reference/keyword search.
+- Show readable Scripture; hide Strong's markup from normal presentation text.
+- Direct Preview, LIVE, and optional Add to Service buttons.
+- Never allow AI to invent or rewrite Scripture.
+- Smart Presenter and Auto Scripture Follow may resolve references only against the exact installed local Bible database.
+- Auto Scripture Follow must always go to PREVIEW first, never automatically LIVE.
+
+SONGS
+- Local song library.
+- Create/edit title, author, CCLI, key, Verse/Chorus/Bridge sections.
+- Preview or Live any section instantly.
+- Adding songs to a service is optional.
+
+MEDIA
+- Freely import local images, videos, and audio.
+- Image/video Preview and Live.
+- Audio Preview/Play/Stop with persistent audio state.
+- Media must remain usable after the packaged UI moves to an HTTP origin.
+- Provide thumbnails and clear media type labels.
+
+YOUTUBE
+- Paste a YouTube URL inside VerseFlow.
+- Load/Preview inside the app and Present YouTube to the Audience display.
+- Use the official embedded player and a valid HTTP origin/referrer architecture.
+- Do not promise to remove YouTube ads and do not bypass DRM or platform restrictions.
+- If a video owner disables embedding, surface a clear error instead of breaking the app.
+
+THEMES / DESIGN
+- Premium warm light theme: light beige main background, off-white panels/inputs, charcoal text/icons, gold active controls/accents, red LIVE state.
+- Full font-family, font-size, text-color, reference/accent-color, alignment, overlay, and transition controls.
+- Do not hard-code CSS colors that override the live color pickers.
+- Preserve 16:9 safe margins.
+
+PERSISTENT QUICK BAR
+Always-visible operator controls:
+- Black
+- Logo
+- Clear Text
+- Bible
+- Songs
+- Media
+- YouTube
+- Timer
+- Production
+- Stop Audio
+- Previous
+- Live
+- Next
+All buttons must have real behavior. No decorative/nonfunctional controls.
+
+LOWER THIRDS
+- Headline/name + subtitle/role.
+- Preview and Live.
+- Appropriate broadcast-style placement and safe margins.
+
+TIMERS
+- Operator can enter label and minutes.
+- Preview and Start Timer.
+- Render countdown on audience output and useful timer information on stage output.
+
+OPTIONAL OPEN-SOURCE PRODUCTION CENTER
+Keep all integrations optional. The installer must clearly tell the operator what is installed and what is missing.
+
+1. mpv
+- Professional local media playback.
+- Launch selected local media fullscreen on a selected Windows display.
+- JSON IPC controls: pause/resume, seek ±10 seconds, stop, volume.
+
+2. FFmpeg / ffprobe
+- Probe codecs, resolution, duration and size.
+- Create a compatible H.264/AAC MP4 copy.
+- Automatically add converted output to VerseFlow Media.
+
+3. whisper.cpp
+- Offline live microphone captions using the multilingual base model.
+- Auto, English, Portuguese and Spanish language choices.
+- Preview/Live caption controls.
+- Auto Scripture Follow listens for spoken references but only prepares an exact local verse in Preview.
+
+4. OBS Studio / obs-websocket
+- Open OBS from VerseFlow.
+- Connect by host, default v5 port 4455 and password.
+- List scenes and change the program scene.
+- Start/stop recording.
+- Start/stop streaming.
+- Keep authentication/password guidance visible.
+
+5. HyperFrames
+- Create a valid 1920×1080 local HTML video composition.
+- Open Motion Studio preview.
+- Render MP4 using HyperFrames + FFmpeg.
+- Automatically add successful renders to VerseFlow Media.
+
+6. Bitfocus Companion / Stream Deck
+- Start a localhost-only VerseFlow HTTP control API.
+- Provide copyable URLs/actions for black, clear, logo, empty, live, next, previous.
+- Button actions must safely route back to the control window.
+
+7. Ollama
+- Lightweight optional local Smart Presenter model: qwen3:0.6b.
+- No paid API key required.
+- AI returns a safe action plan; operator chooses Preview or Live for content actions.
+- If Ollama is absent, common commands still work through deterministic rule-based parsing.
+- AI must never write or rewrite Scripture.
+
+8. yt-dlp + Deno
+- Optional permitted web-media importer.
+- Use only for content the operator owns or is authorized to download.
+- Do not bypass DRM or grant content rights.
+- Install Deno because current yt-dlp full YouTube extraction uses an external JavaScript runtime.
+- Use FFmpeg when needed for merging/post-processing.
+
+SMART PRESENTER COMMANDS
+Support safe commands such as:
+- “Show John 3:16”
+- “Make the text pink”
+- “Show our welcome video”
+- “Show Amazing Grace”
+- “Black screen”
+- “Show logo”
+- “Start a 5 minute countdown”
+- “Lower third: Pastor John | Senior Pastor”
+- “Stop audio”
+Scripture references must resolve to exact local database text.
+
+STAGE DISPLAY
+Separate stage window showing useful operator/presenter information such as:
+- Current reference/title
+- Current text
+- Next item
+- Clock
+- Countdown
+- Notes
+Never show editor controls on Stage.
+
+DATA
+- Local SQLite-equivalent storage.
+- Media remains on disk.
+- Backup and restore.
+- Core data is offline-first.
+
+OPTIONAL TOOLS INSTALLER
+Provide a Windows BAT menu for:
+1. Ollama + qwen3:0.6b
+2. yt-dlp + Deno
+3. FFmpeg
+4. mpv
+5. whisper.cpp + multilingual base model
+6. OBS Studio
+7. HyperFrames
+8. Bitfocus Companion
+9. Install all recommended tools
+S. Status
+Q. Quit
+The core app must never fail because an optional tool is not installed.
+
+QUALITY BAR
+- No dead buttons.
+- No fake integrations.
+- Every button either performs its action or produces a useful error/status message.
+- Keep emergency Black/Clear/Logo functions reliable.
+- Preserve secure Electron defaults.
+- Add regression tests for packaging, full bundled Bibles, YouTube desktop identity, multilingual switching, local media protocol, optional production IPC wiring, and Smart Presenter safety.
+- Prefer deterministic operator control over autonomous AI.
+- If an AI suggestion is uncertain, preview it rather than sending it live.
+- Build for a real church operator under time pressure: large clear controls, predictable behavior, fast recovery, and no unnecessary steps.

@@ -1,0 +1,13 @@
+VerseFlow 1.4.8 - Bible lazy loading performance fix
+
+What changed:
+- Startup no longer sends every Bible verse to the React renderer.
+- Dashboard receives a verse count instead of the full verse collection.
+- Bible page loads only: translation book list -> chapter list -> selected chapter.
+- Bible text search is limited and runs through Electron IPC.
+- Live Desk Bible search is lazy and limited.
+- Smart Presenter verse lookup, Auto Scripture Follow, and global Bible search now query the local Bible database on demand.
+- Existing offline Bible files, imports, presentation, media, OBS/FFmpeg/AI integrations and installer configuration were not removed.
+
+Why:
+This reduces renderer memory pressure and avoids parsing tens/hundreds of thousands of verse objects when the operator opens VerseFlow or clicks Bible.

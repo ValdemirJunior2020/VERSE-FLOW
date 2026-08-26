@@ -1,0 +1,219 @@
+const fs = require('fs')
+const path = require('path')
+const initSqlJs = require('sql.js')
+
+const defaultThemes = [
+  {id:'theme-classic-gold',name:'Classic Gold',fontFamily:'Georgia, Times New Roman, serif',fontSize:64,alignment:'center',overlay:.54,textColor:'#f4f2ed',accentColor:'#d7a640',transition:'fade'},
+  {id:'theme-minimal',name:'Minimal Charcoal',fontFamily:'Arial, Helvetica, sans-serif',fontSize:60,alignment:'left',overlay:.66,textColor:'#f4f2ed',accentColor:'#f0c86a',transition:'cut'},
+  {id:'theme-stage',name:'Warm Sermon',fontFamily:'Georgia, Times New Roman, serif',fontSize:70,alignment:'center',overlay:.44,textColor:'#fffaf0',accentColor:'#f0c86a',transition:'fade'}
+]
+const sampleVerses = [
+  ['WEB','Genesis',1,1,'In the beginning, God created the heavens and the earth.'],
+  ['WEB','Psalm',23,1,'Yahweh is my shepherd: I shall lack nothing.'],
+  ['WEB','Psalm',23,4,'Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me.'],
+  ['WEB','John',1,1,'In the beginning was the Word, and the Word was with God, and the Word was God.'],
+  ['WEB','John',3,16,'For God so loved the world, that he gave his one and only Son, that whoever believes in him should not perish, but have eternal life.'],
+  ['WEB','Romans',8,28,'We know that all things work together for good for those who love God, to those who are called according to his purpose.'],
+  ['WEB','Philippians',4,13,'I can do all things through Christ, who strengthens me.']
+]
+
+class VerseFlowDb {
+  constructor(file) { this.file=file; this.db=null; this.SQL=null }
+  async init() {
+    const wasmDir = path.dirname(require.resolve('sql.js/dist/sql-wasm.wasm'))
+    this.SQL = await initSqlJs({ locateFile: f => path.join(wasmDir, f) })
+    this.db = fs.existsSync(this.file) ? new this.SQL.Database(fs.readFileSync(this.file)) : new this.SQL.Database()
+    this.migrate()
+    this.persist()
+  }
+  migrate() {
+    this.db.run(`
+      CREATE TABLE IF NOT EXISTS translations (code TEXT PRIMARY KEY, name TEXT NOT NULL, license TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS verses (id INTEGER PRIMARY KEY AUTOINCREMENT, translation TEXT NOT NULL, book TEXT NOT NULL, chapter INTEGER NOT NULL, verse INTEGER NOT NULL, text TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS objects (entity TEXT NOT NULL, id TEXT NOT NULL, json TEXT NOT NULL, updated_at TEXT NOT NULL, PRIMARY KEY(entity,id));
+      CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, json TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS favorites (verse_id INTEGER PRIMARY KEY);
+    `)
+    this.db.run('INSERT OR IGNORE INTO translations(code,name,license) VALUES (?,?,?)',['WEB','World English Bible','Public Domain — bundled development sample'])
+    const c = this.one('SELECT COUNT(*) AS n FROM verses')
+    if (!c || c.n === 0) {
+      const stmt = this.db.prepare('INSERT INTO verses(translation,book,chapter,verse,text) VALUES (?,?,?,?,?)')
+      for (const v of sampleVerses) stmt.run(v)
+      stmt.free()
+    }
+    for (const t of defaultThemes) this.putObject('themes', t.id, t, false)
+    if (!this.listObjects('songs').length) {
+      const song={id:'song-amazing-grace',title:'Amazing Grace',author:'John Newton',sections:[
+        {id:'v1',label:'Verse 1',lines:['Amazing grace, how sweet the sound','That saved a wretch like me']},
+        {id:'v2',label:'Verse 2',lines:['I once was lost, but now am found','Was blind, but now I see']}
+      ]}
+      this.putObject('songs',song.id,song,false)
+    }
+  }
+  rows(sql, params=[]) {
+    const stmt=this.db.prepare(sql); stmt.bind(params); const out=[]
+    while(stmt.step()) out.push(stmt.getAsObject())
+    stmt.free(); return out
+  }
+  one(sql,params=[]){return this.rows(sql,params)[0]}
+  listObjects(entity){return this.rows('SELECT json FROM objects WHERE entity=? ORDER BY updated_at DESC',[entity]).map(r=>JSON.parse(r.json))}
+  putObject(entity,id,value,persist=true){
+    this.db.run('INSERT OR REPLACE INTO objects(entity,id,json,updated_at) VALUES (?,?,?,?)',[entity,String(id),JSON.stringify(value),new Date().toISOString()])
+    if(persist)this.persist()
+  }
+  removeObject(entity,id){this.db.run('DELETE FROM objects WHERE entity=? AND id=?',[entity,String(id)]);this.persist()}
+  getTranslationVerses(code){
+    const normalized=String(code||'').trim().toUpperCase()
+    if(!normalized) return []
+    return this.rows('SELECT * FROM verses WHERE translation=? ORDER BY book, chapter, verse',[normalized])
+  }
+  getBibleBooks(code){
+    const normalized=String(code||'').trim().toUpperCase()
+    if(!normalized) return []
+    return this.rows('SELECT book, MIN(id) AS first_id FROM verses WHERE translation=? GROUP BY book ORDER BY first_id',[normalized]).map(r=>r.book)
+  }
+  getBibleChapters(code,book){
+    const normalized=String(code||'').trim().toUpperCase(), b=String(book||'').trim()
+    if(!normalized||!b) return []
+    return this.rows('SELECT DISTINCT chapter FROM verses WHERE translation=? AND book=? ORDER BY chapter',[normalized,b]).map(r=>Number(r.chapter))
+  }
+  getBibleChapter(code,book,chapter){
+    const normalized=String(code||'').trim().toUpperCase(), b=String(book||'').trim(), c=Number(chapter)
+    if(!normalized||!b||!Number.isInteger(c)||c<1) return []
+    return this.rows('SELECT * FROM verses WHERE translation=? AND book=? AND chapter=? ORDER BY verse',[normalized,b,c])
+  }
+  searchBible(query,code,limit=80){
+    const q=String(query||'').trim(), normalized=String(code||'').trim().toUpperCase(), max=Math.max(1,Math.min(250,Number(limit)||80))
+    const ref=q.match(/^(.+?)\s+(\d{1,3}):(\d{1,3})$/)
+    if(ref){
+      const book=String(ref[1]).trim(), chapter=Number(ref[2]), verse=Number(ref[3])
+      const params=normalized?[normalized,chapter,verse]:[chapter,verse]
+      const sql=normalized?'SELECT * FROM verses WHERE translation=? AND chapter=? AND verse=? ORDER BY id LIMIT 50':'SELECT * FROM verses WHERE chapter=? AND verse=? ORDER BY id LIMIT 50'
+      const candidates=this.rows(sql,params)
+      const norm=s=>String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()
+      const wanted=norm(book)
+      return candidates.filter(v=>{const got=norm(v.book);return got===wanted||got.includes(wanted)||wanted.includes(got)}).slice(0,max)
+    }
+    if(!q){
+      if(normalized)return this.rows('SELECT * FROM verses WHERE translation=? ORDER BY id LIMIT ?',[normalized,max])
+      return this.rows('SELECT * FROM verses ORDER BY id LIMIT ?',[max])
+    }
+    const like=`%${q.toLowerCase()}%`
+    if(normalized)return this.rows("SELECT * FROM verses WHERE translation=? AND (LOWER(book || ' ' || chapter || ':' || verse || ' ' || text) LIKE ?) ORDER BY id LIMIT ?",[normalized,like,max])
+    return this.rows("SELECT * FROM verses WHERE LOWER(book || ' ' || chapter || ':' || verse || ' ' || text) LIKE ? ORDER BY id LIMIT ?",[like,max])
+  }
+  findBibleReference(reference,code){return this.searchBible(reference,code,1)[0]||null}
+
+  loadAll(){
+    const settings={}
+    for(const r of this.rows('SELECT key,json FROM settings')) settings[r.key]=JSON.parse(r.json)
+    return {
+      verses:[],
+      verseCount:Number(this.one('SELECT COUNT(*) AS n FROM verses')?.n||0),
+      translations:this.rows('SELECT code,name,license FROM translations ORDER BY name'),
+      songs:this.listObjects('songs'), media:this.listObjects('media'), services:this.listObjects('services'),
+      themes:this.listObjects('themes'), settings, favorites:this.rows('SELECT verse_id FROM favorites').map(r=>r.verse_id)
+    }
+  }
+
+
+  normalizeTranslationPayload(payload, forcedMeta={}){
+    if(!payload||typeof payload!=='object') throw new Error('Bible JSON must be an object.')
+
+    // VerseFlow native format.
+    if(Array.isArray(payload.verses) && payload.verses.length && payload.verses[0]?.book){
+      return {
+        translation:String(forcedMeta.code||payload.translation||'').trim().toUpperCase(),
+        name:String(forcedMeta.name||payload.name||payload.translation||'').trim(),
+        license:String(forcedMeta.license||payload.license||'Imported local translation').trim(),
+        verses:payload.verses.map(v=>({
+          book:String(v.book||'').trim(),
+          chapter:Number(v.chapter),
+          verse:Number(v.verse),
+          text:String(v.text||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim()
+        }))
+      }
+    }
+
+    // GetBible v2 format: {translation, books:[{name, chapters:[{chapter, verses:[...]}]}]}
+    if(Array.isArray(payload.books)){
+      const out=[]
+      for(const b of payload.books){
+        const book=String(b.name||b.book||b.book_name||'').trim()
+        const chapters=Array.isArray(b.chapters)?b.chapters:[]
+        for(const c of chapters){
+          const chapter=Number(c.chapter||c.nr||c.number)
+          const verses=Array.isArray(c.verses)?c.verses:[]
+          for(const v of verses){
+            out.push({
+              book,
+              chapter:Number(v.chapter||chapter),
+              verse:Number(v.verse||v.nr||v.number),
+              text:String(v.text||v.verse_text||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim()
+            })
+          }
+        }
+      }
+      return {
+        translation:String(forcedMeta.code||payload.abbreviation||payload.translation||'').trim().toUpperCase(),
+        name:String(forcedMeta.name||payload.translation||payload.name||'').trim(),
+        license:String(forcedMeta.license||payload.distribution_license||payload.license||'Imported translation').trim(),
+        verses:out
+      }
+    }
+
+    // Common array formats.
+    if(Array.isArray(payload)){
+      const out=[]
+      for(const row of payload){
+        if(row && typeof row==='object'){
+          const book=String(row.book||row.book_name||row.name||'').trim()
+          const chapter=Number(row.chapter||row.chapter_nr||row.chapterNumber)
+          const verse=Number(row.verse||row.verse_nr||row.verseNumber)
+          const text=String(row.text||row.verse_text||row.content||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim()
+          if(book && chapter && verse && text) out.push({book,chapter,verse,text})
+        }
+      }
+      if(out.length){
+        return {
+          translation:String(forcedMeta.code||'IMPORTED').trim().toUpperCase(),
+          name:String(forcedMeta.name||forcedMeta.code||'Imported Bible').trim(),
+          license:String(forcedMeta.license||'Imported local translation').trim(),
+          verses:out
+        }
+      }
+    }
+
+    throw new Error('Unsupported Bible JSON structure. Use VerseFlow JSON or GetBible v2 JSON.')
+  }
+
+  importTranslation(payload, forcedMeta={}){
+    const normalized=this.normalizeTranslationPayload(payload,forcedMeta)
+    const code=String(normalized.translation||'').trim().toUpperCase()
+    const name=String(normalized.name||code).trim()
+    const license=String(normalized.license||'').trim()
+    const verses=Array.isArray(normalized.verses)?normalized.verses:[]
+    if(!code||code.length>24) throw new Error('Missing or invalid translation code.')
+    if(!license) throw new Error('A license/source note is required.')
+    if(!verses.length) throw new Error('No verses were found in this Bible file.')
+    const seen=new Set(), clean=[]
+    for(const v of verses){
+      const book=String(v.book||'').trim(), chapter=Number(v.chapter), verse=Number(v.verse), text=String(v.text||'').trim()
+      if(!book||!Number.isInteger(chapter)||chapter<1||!Number.isInteger(verse)||verse<1||!text) continue
+      const key=`${book.toLowerCase()}|${chapter}|${verse}`; if(seen.has(key)) continue; seen.add(key); clean.push([code,book,chapter,verse,text])
+    }
+    if(clean.length<100) throw new Error(`Only ${clean.length} valid verses were found. The file may not be a complete Bible.`)
+    this.db.run('BEGIN')
+    try{
+      this.db.run('DELETE FROM verses WHERE translation=?',[code])
+      this.db.run('INSERT OR REPLACE INTO translations(code,name,license) VALUES (?,?,?)',[code,name,license])
+      const stmt=this.db.prepare('INSERT INTO verses(translation,book,chapter,verse,text) VALUES (?,?,?,?,?)')
+      for(const row of clean) stmt.run(row)
+      stmt.free(); this.db.run('COMMIT'); this.persist(); return {translation:code,imported:clean.length}
+    }catch(e){this.db.run('ROLLBACK');throw e}
+  }
+  setSetting(key,value){this.db.run('INSERT OR REPLACE INTO settings(key,json) VALUES (?,?)',[String(key),JSON.stringify(value)]);this.persist()}
+  persist(){fs.mkdirSync(path.dirname(this.file),{recursive:true});fs.writeFileSync(this.file,Buffer.from(this.db.export()))}
+  replaceFrom(file){const bytes=fs.readFileSync(file); if(this.db)this.db.close(); this.db=new this.SQL.Database(bytes);this.migrate();this.persist()}
+}
+module.exports={VerseFlowDb}

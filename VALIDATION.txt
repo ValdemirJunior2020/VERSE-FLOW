@@ -1,0 +1,24 @@
+VerseFlow V3 validation notes
+
+Checks completed in the build workspace:
+- package.json parses as valid JSON.
+- All 18 bundled full Bible files parse and contain >30,000 verses, begin at chapter 1 verse 1, and end at Revelation 22:21.
+- electron/main.cjs passes node --check.
+- electron/preload.cjs passes node --check.
+- electron/production-tools.cjs passes node --check.
+- TypeScript/TSX syntax scan reports no TS1xxx parser diagnostics.
+- Static regression assertions passed for:
+  * English default + Brazilian Portuguese + Spanish UI switching.
+  * supplied Brazilian flag asset.
+  * no-translate protection for Scripture/live presentation content.
+  * mpv, FFmpeg, whisper.cpp, OBS, HyperFrames, Companion IPC wiring.
+  * Smart Presenter timer/lower-third/stop-audio actions.
+  * yt-dlp + Deno installer wiring.
+  * YouTube localhost HTTP origin/referrer architecture.
+  * secure verseflow-media streaming protocol for local media.
+  * 18 bundled Genesis-to-Revelation Bible editions.
+- All TSX button elements were statically audited: no button tag lacks an action handler.
+
+The full npm/Vitest/Vite/Electron Windows build was not executed in this workspace because node_modules is not present here. Run INSTALL_VERSEFLOW.bat or `npm install`, `npm test`, and `npm run build` on Windows for the final environment-specific check.
+
+Windows packaging helper now kills stale VerseFlow/Electron processes and falls back to a timestamped release folder if an old release directory is locked.

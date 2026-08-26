@@ -1,0 +1,98 @@
+{
+  "name": "verseflow",
+  "version": "1.4.8",
+  "private": true,
+  "description": "Offline-first multilingual smart church presentation and open-source production control center for Windows",
+  "main": "electron/main.cjs",
+  "author": "VerseFlow",
+  "license": "MIT",
+  "scripts": {
+    "dev": "concurrently -k \"vite --host 127.0.0.1\" \"wait-on http://127.0.0.1:5173 && cross-env VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .\"",
+    "build": "vite build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dist:win": "npm run build && electron-builder --win nsis portable --x64",
+    "pack:win": "npm run build && electron-builder --win dir --x64",
+    "test:e2e": "npm run build && node tests/verseflow.e2e.cjs",
+    "test:all": "npm test && npm run test:e2e",
+    "dist:win:installer": "npm run build && electron-builder --win nsis --x64",
+    "dist:win:portable": "npm run build && electron-builder --win portable --x64"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "sql.js": "^1.13.0",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^9.1.2",
+    "cross-env": "^7.0.3",
+    "electron": "^43.2.0",
+    "electron-builder": "^26.10.0",
+    "typescript": "^5.7.3",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.8",
+    "wait-on": "^8.0.1",
+    "playwright": "^1.62.0"
+  },
+  "build": {
+    "appId": "com.verseflow.desktop",
+    "productName": "VerseFlow",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json",
+      "node_modules/sql.js/**/*",
+      "src/data/**/*",
+      "bibles/bundled/**/*",
+      "node_modules/ws/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/sql.js/dist/*.wasm"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "${productName}-${version}-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "VerseFlow",
+      "include": "build/installer.nsh",
+      "warningsAsErrors": false
+    },
+    "portable": {
+      "artifactName": "VerseFlow-Portable-${version}-${arch}.${ext}"
+    },
+    "extraResources": [
+      {
+        "from": "INSTALL_OPTIONAL_OPEN_SOURCE_TOOLS.bat",
+        "to": "tools/INSTALL_OPTIONAL_OPEN_SOURCE_TOOLS.bat"
+      }
+    ]
+  }
+}

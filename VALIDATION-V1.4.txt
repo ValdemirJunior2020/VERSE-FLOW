@@ -1,0 +1,27 @@
+VERSEFLOW 1.4.0 — SUNDAY-SAFE BACKGROUNDS / MUSIC / DIAGNOSTICS
+
+Changes validated in this package:
+- 12 built-in offline background presets are present.
+- Built-in backgrounds use local SVG data and need no network connection.
+- Bible verse and song presentation paths preserve the selected background/music.
+- Media has explicit USE AS BG vs FULLSCREEN actions.
+- Audio has explicit ADD MUSIC vs PLAY NOW actions.
+- Background controls are available for Bible, Songs and Live Desk.
+- Local error logging and React crash recovery are wired.
+- Settings includes one-click System Check.
+- System Check verifies writable storage, database, display detection and app files; FFmpeg is optional.
+- Cline reliability rules are included in .clinerules/verseflow.md.
+- Playwright Electron user-flow test is included in tests/verseflow.e2e.cjs.
+- FFmpeg Media Doctor integration from VerseFlow V3 is preserved.
+- English, Brazilian Portuguese and Spanish UI dictionaries include the new controls.
+
+Validation performed in the build workspace:
+PASS: electron/main.cjs Node syntax
+PASS: electron/preload.cjs Node syntax
+PASS: tests/verseflow.e2e.cjs Node syntax
+PASS: all 24 TypeScript/TSX source/test files parsed with TypeScript 5.8.3 with zero syntax errors
+PASS: package.json parses and version is 1.4.0
+PASS: 12 offline background definitions detected
+
+Environment limitation:
+The ChatGPT build container blocks npm packages through its internal registry, so npm install returned a registry 404 for @types/react. Because dependencies were intentionally not included in the uploaded ZIP, Vitest/Vite/Playwright could not be executed here. The project's Windows installer forces the official npm registry on the user's PC and will still run the existing critical Vitest suite before packaging. CHECK_VERSEFLOW.bat additionally runs the Playwright Electron user-flow test on a normal development PC.

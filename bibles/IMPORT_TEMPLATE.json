@@ -1,0 +1,13 @@
+{
+  "translation": "NIV",
+  "name": "New International Version",
+  "license": "Local user-provided copy",
+  "verses": [
+    {
+      "book": "John",
+      "chapter": 3,
+      "verse": 16,
+      "text": "PASTE YOUR OWN VERSE TEXT HERE"
+    }
+  ]
+}

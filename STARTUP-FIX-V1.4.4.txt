@@ -1,0 +1,12 @@
+VerseFlow V1.4.4 — Sunday Safe startup fix
+
+Fixes the packaged-app endless “Loading VerseFlow…” screen seen on older Windows 10 PCs.
+
+What changed:
+- The operator interface is released after 6 seconds even if a large local Bible database is still loading.
+- The original database request continues in the background and fills the interface when complete.
+- Error logging is now fire-and-forget so a busy Electron main process cannot keep the splash screen alive.
+- Missing optional tools no longer spam “Could not find files for the given pattern(s).” during normal startup.
+- Main-process startup timing is printed to the console for future diagnosis.
+
+No Bible, media, lyrics, background, TELÃO detector, or presentation feature was removed.

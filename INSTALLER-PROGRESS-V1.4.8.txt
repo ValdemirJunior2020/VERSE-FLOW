@@ -1,0 +1,35 @@
+VERSEFLOW 1.4.8 - WINDOWS INSTALLER PROGRESS UPDATE
+===================================================
+
+WHAT CHANGED
+- Keeps the existing Electron application and all current runtime features.
+- Keeps the existing assisted NSIS installer (not one-click).
+- Keeps the existing portable Windows build.
+- Adds a professional Welcome page before installation.
+- Forces the NSIS installation details/progress area to stay visible.
+- Adds clear status messages so a slower church PC does not look frozen.
+- Writes a persistent installer log to:
+  %LOCALAPPDATA%\VerseFlow\logs\install.log
+- Adds separate npm commands to build only the installer or only the portable edition.
+
+BUILD COMMANDS
+npm ci
+npm run test:all
+npm run dist:win
+
+Installer only:
+npm run dist:win:installer
+
+Portable only:
+npm run dist:win:portable
+
+IMPORTANT
+The application architecture was NOT migrated away from Electron in this update.
+That is intentional. VerseFlow currently depends on Electron for its multi-window
+presentation workflow and local/native production integrations. A Tauri/Pake
+migration should be tested separately rather than risking the live church build.
+
+SIZE NOTE
+The bundled offline Bible JSON files account for roughly 106 MB of the source tree.
+They are intentionally retained in this version so offline Bible functionality is
+not removed or changed.

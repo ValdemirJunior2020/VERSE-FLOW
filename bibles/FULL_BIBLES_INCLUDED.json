@@ -1,0 +1,182 @@
+[
+  {
+    "code": "ASV",
+    "name": "American Standard Version",
+    "language": "English",
+    "verses": 31101,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "EN-English/asv.json"
+  },
+  {
+    "code": "ASV-STRONGS",
+    "name": "American Standard Version w Strong's",
+    "language": "English",
+    "verses": 31086,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "EN-English/asvs.json"
+  },
+  {
+    "code": "KJV",
+    "name": "Authorized King James Version",
+    "language": "English",
+    "verses": 31102,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "EN-English/kjv.json"
+  },
+  {
+    "code": "KJVPCE",
+    "name": "Authorized King James Version - PCE",
+    "language": "English",
+    "verses": 31102,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "EN-English/kjvpce.json"
+  },
+  {
+    "code": "KJV-STRONGS",
+    "name": "Authorized King James Version w Strong's",
+    "language": "English",
+    "verses": 31102,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "EN-English/kjv_strongs.json"
+  },
+  {
+    "code": "BISHOPS",
+    "name": "Bishops Bible",
+    "language": "English",
+    "verses": 31096,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "EN-English/bishops.json"
+  },
+  {
+    "code": "COVERDALE",
+    "name": "Coverdale Bible",
+    "language": "English",
+    "verses": 31102,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "EN-English/coverdale.json"
+  },
+  {
+    "code": "GENEVA",
+    "name": "Geneva Bible",
+    "language": "English",
+    "verses": 31102,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "EN-English/geneva.json"
+  },
+  {
+    "code": "NET",
+    "name": "NET Bible®",
+    "language": "English",
+    "verses": 31087,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "EN-English/net.json"
+  },
+  {
+    "code": "WEB",
+    "name": "World English Bible",
+    "language": "English",
+    "verses": 31098,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "EN-English/web.json"
+  },
+  {
+    "code": "BLIVRE",
+    "name": "Biblia Livre",
+    "language": "Português",
+    "verses": 31097,
+    "books": 66,
+    "first": "Gênesis 1:1",
+    "last": "Apocalipse 22:21",
+    "source_file": "PT-Português/blivre.json"
+  },
+  {
+    "code": "ALMEIDA-RA",
+    "name": "Tradução de João Ferreira de Almeida (Versão Revista e Atualizada)",
+    "language": "Português",
+    "verses": 31102,
+    "books": 66,
+    "first": "Gênesis 1:1",
+    "last": "Apocalipse 22:21",
+    "source_file": "PT-Português/almeida_ra.json"
+  },
+  {
+    "code": "ALMEIDA-RC",
+    "name": "Tradução de João Ferreira de Almeida Revista e Corrigida.",
+    "language": "Português",
+    "verses": 31102,
+    "books": 66,
+    "first": "Gênesis 1:1",
+    "last": "Apocalipse 22:21",
+    "source_file": "PT-Português/almeida_rc.json"
+  },
+  {
+    "code": "RV1909",
+    "name": "Reina Valera 1909",
+    "language": "Español",
+    "verses": 31102,
+    "books": 66,
+    "first": "Génesis 1:1",
+    "last": "Revelación 22:21",
+    "source_file": "ES-Español/rv_1909.json"
+  },
+  {
+    "code": "RVG",
+    "name": "Reina Valera Gómez",
+    "language": "Español",
+    "verses": 31102,
+    "books": 66,
+    "first": "Génesis 1:1",
+    "last": "Revelación 22:21",
+    "source_file": "ES-Español/rvg.json"
+  },
+  {
+    "code": "RV1909-STRONGS",
+    "name": "Reina-Valera 1909 w/Strong's",
+    "language": "Español",
+    "verses": 31103,
+    "books": 66,
+    "first": "Génesis 1:1",
+    "last": "Revelación 22:21",
+    "source_file": "ES-Español/rv_1909_strongs.json"
+  },
+  {
+    "code": "SAGRADAS",
+    "name": "Sagradas Escrituras",
+    "language": "Español",
+    "verses": 31102,
+    "books": 66,
+    "first": "Génesis 1:1",
+    "last": "Revelación 22:21",
+    "source_file": "ES-Español/sagradas.json"
+  },
+  {
+    "code": "HE-MODERN",
+    "name": "תנ ך עברי מודרני",
+    "language": "עברית",
+    "verses": 31102,
+    "books": 66,
+    "first": "בְּרֵאשִׁית 1:1",
+    "last": "חזוֹן יוֹחָנָן 22:21",
+    "source_file": "HE-עברית/he_modern.json"
+  }
+]

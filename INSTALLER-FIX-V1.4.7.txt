@@ -1,0 +1,13 @@
+VerseFlow V1.4.7 - Clean PC Node Bootstrap Fix
+
+This build keeps the working V1.4.6 application code and changes only the portable Node bootstrap/install path.
+
+Fixes:
+- Does not use PowerShell Expand-Archive for Node.js extraction.
+- Uses Windows tar.exe when available.
+- Falls back to .NET ZIP extraction if tar.exe is unavailable.
+- Extracts to a short unique TEMP directory to avoid long-path/space problems.
+- Cleanup is best-effort and cannot fail the installation because a temporary file was already removed.
+- Verifies node.exe exists before continuing.
+
+The VerseFlow UI/startup/telao/background features are unchanged from the working V1.4.6.
