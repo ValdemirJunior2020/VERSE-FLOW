@@ -11,7 +11,7 @@
     "build": "vite build",
     "test": "vitest run",
     "test:watch": "vitest",
-    "dist:win": "npm run build && electron-builder --win nsis portable --x64",
+    "dist:win": "npm run build && electron-builder --win nsis --x64 && electron-builder --win portable --x64",
     "pack:win": "npm run build && electron-builder --win dir --x64",
     "test:e2e": "npm run build && node tests/verseflow.e2e.cjs",
     "test:all": "npm test && npm run test:e2e",
@@ -90,8 +90,16 @@
     },
     "extraResources": [
       {
-        "from": "INSTALL_OPTIONAL_OPEN_SOURCE_TOOLS.bat",
-        "to": "tools/INSTALL_OPTIONAL_OPEN_SOURCE_TOOLS.bat"
+        "from": "INSTALL_VERSEFLOW.bat",
+        "to": "tools/INSTALL_VERSEFLOW.bat"
+      },
+      {
+        "from": "scripts/install-all-tools.ps1",
+        "to": "tools/scripts/install-all-tools.ps1"
+      },
+      {
+        "from": "scripts/bootstrap-node.ps1",
+        "to": "tools/scripts/bootstrap-node.ps1"
       }
     ]
   }

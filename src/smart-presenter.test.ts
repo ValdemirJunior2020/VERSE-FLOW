@@ -27,4 +27,17 @@ describe('Smart Presenter tools', () => {
     expect(main).toContain('Never rewrite, paraphrase, summarize, correct, or invent Scripture')
     expect(main).toContain('VerseFlow itself will retrieve the exact stored verse text')
   })
+
+  it('strips command words and corrects common Bible book typos', () => {
+    const main=fs.readFileSync(path.resolve(process.cwd(),'electron/main.cjs'),'utf8')
+    expect(main).toContain('const verseCommand=c.replace')
+    expect(main).toContain("jhon:'John'")
+  })
+
+  it('suggests a likely existing verse when a reference is missing', () => {
+    const app=fs.readFileSync(path.resolve(process.cwd(),'src/App.tsx'),'utf8')
+    expect(app).toContain('suggestBibleReferences')
+    expect(app).toContain('Did you mean')
+    expect(app).toContain('smartSuggestions')
+  })
 })

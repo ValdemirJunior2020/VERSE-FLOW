@@ -127,13 +127,7 @@ Keep all integrations optional. The installer must clearly tell the operator wha
 - Start/stop streaming.
 - Keep authentication/password guidance visible.
 
-5. HyperFrames
-- Create a valid 1920×1080 local HTML video composition.
-- Open Motion Studio preview.
-- Render MP4 using HyperFrames + FFmpeg.
-- Automatically add successful renders to VerseFlow Media.
-
-6. Bitfocus Companion / Stream Deck
+5. Bitfocus Companion / Stream Deck
 - Start a localhost-only VerseFlow HTTP control API.
 - Provide copyable URLs/actions for black, clear, logo, empty, live, next, previous.
 - Button actions must safely route back to the control window.
@@ -189,9 +183,8 @@ Provide a Windows BAT menu for:
 4. mpv
 5. whisper.cpp + multilingual base model
 6. OBS Studio
-7. HyperFrames
-8. Bitfocus Companion
-9. Install all recommended tools
+7. Bitfocus Companion
+8. Install all recommended tools
 S. Status
 Q. Quit
 The core app must never fail because an optional tool is not installed.

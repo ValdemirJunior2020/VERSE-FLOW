@@ -12,7 +12,7 @@ VerseFlow is an offline-first Windows church presentation app built with Electro
 
 No global Node.js, Git, Python, Visual Studio, or admin install is required by the VerseFlow source bootstrap.
 
-For source/development mode, double-click `DEV_VERSEFLOW.bat`.
+For source/development mode, double-click `INSTALL_VERSEFLOW.bat --dev`.
 
 ## Core V1 workflow
 
@@ -30,7 +30,7 @@ The bundled Bible content is a tiny **World English Bible public-domain developm
 
 Core scripture/song/static-media output has no network dependency. Optional AI and video tools are not loaded by the live engine. Missing integrations do not block Present mode.
 
-Video files use Chromium's built-in playback. FFmpeg is not bundled in this V1. HyperFrames requires FFmpeg separately.
+Video files use Chromium's built-in playback. FFmpeg remains an optional local production dependency.
 
 ## Security
 
@@ -103,7 +103,7 @@ VerseFlow now ships with 18 user-supplied complete Genesis-to-Revelation Bible e
 
 ## Smart Presenter (optional local AI)
 
-Run `INSTALL_OPTIONAL_OPEN_SOURCE_TOOLS.bat` to install Ollama with the lightweight `qwen3:0.6b` model and/or the official Windows `yt-dlp.exe`. Live Desk has a Smart tab with safe Preview/Live action planning. AI never rewrites Scripture; Bible text always comes from the local VerseFlow Bible database.
+Run `INSTALL_VERSEFLOW.bat` to install Ollama with the lightweight `qwen3:0.6b` model and/or the official Windows `yt-dlp.exe`. Live Desk has a Smart tab with safe Preview/Live action planning. AI never rewrites Scripture; Bible text always comes from the local VerseFlow Bible database.
 
 The top toolbar Search, New Slide, Import, and Undo controls are functional in this build. Bible now has Translation → Book → Chapter navigation and direct Preview/LIVE buttons.
 
@@ -112,6 +112,6 @@ The top toolbar Search, New Slide, Import, and Undo controls are functional in t
 
 English remains the default interface. The top toolbar includes one-click English, Brazilian Portuguese and Spanish language controls, including the supplied Brazilian flag image.
 
-Production Control integrates optional mpv, FFmpeg, whisper.cpp, OBS Studio/obs-websocket, HyperFrames, Bitfocus Companion, Ollama and yt-dlp + Deno. Live Desk includes custom text, full offline Bibles, songs, images/video/audio, YouTube, Smart Presenter, lower thirds and timers. A persistent Quick Bar keeps emergency/live controls available.
+Production Control integrates optional mpv, FFmpeg, whisper.cpp, OBS Studio/obs-websocket, Bitfocus Companion, Ollama and yt-dlp + Deno. Live Desk includes custom text, full offline Bibles, songs, images/video/audio, YouTube, Smart Presenter, lower thirds and timers. A persistent Quick Bar keeps emergency/live controls available.
 
 Auto Scripture Follow is preview-only and resolves exact locally stored Scripture. Optional integrations never become a dependency of the core presentation engine.

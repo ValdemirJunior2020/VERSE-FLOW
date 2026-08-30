@@ -1,0 +1,8 @@
+VerseFlow V29 - Lyrics Page Extraction
+
+- Search box accepts song title, artist, or both. The word "find" is not required.
+- USE / EDIT now fetches a selected normal song webpage and extracts its dedicated Lyrics section.
+- Crawl4AI returns raw markdown when available and allows a larger page payload so lyrics located lower on long pages are not truncated.
+- Jina Reader fallback also keeps a larger safe read-only page payload.
+- Streaming/redirect pages remain metadata-only because they normally contain no lyric section.
+- Existing .git and .env files are not modified.

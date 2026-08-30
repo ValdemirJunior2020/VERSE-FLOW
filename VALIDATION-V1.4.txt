@@ -24,4 +24,4 @@ PASS: package.json parses and version is 1.4.0
 PASS: 12 offline background definitions detected
 
 Environment limitation:
-The ChatGPT build container blocks npm packages through its internal registry, so npm install returned a registry 404 for @types/react. Because dependencies were intentionally not included in the uploaded ZIP, Vitest/Vite/Playwright could not be executed here. The project's Windows installer forces the official npm registry on the user's PC and will still run the existing critical Vitest suite before packaging. CHECK_VERSEFLOW.bat additionally runs the Playwright Electron user-flow test on a normal development PC.
+The ChatGPT build container blocks npm packages through its internal registry, so npm install returned a registry 404 for @types/react. Because dependencies were intentionally not included in the uploaded ZIP, Vitest/Vite/Playwright could not be executed here. The project's Windows installer forces the official npm registry on the user's PC and will still run the existing critical Vitest suite before packaging. INSTALL_VERSEFLOW.bat --check additionally runs the Playwright Electron user-flow test on a normal development PC.

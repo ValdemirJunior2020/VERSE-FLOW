@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { PresentationState } from '../types'
 
 function fileUrl(path?: string) {
@@ -16,14 +16,24 @@ function formatRemaining(end?:number){
 
 export default function CanvasPreview({ state, live }: { state: PresentationState; live: boolean }) {
   const [,setTick]=useState(0)
+  const videoRef = useRef<HTMLVideoElement>(null)
   useEffect(()=>{if(state.layout!=='countdown')return;const t=setInterval(()=>setTick(x=>x+1),500);return()=>clearInterval(t)},[state.layout,state.timerEndAt])
+  useEffect(() => {
+    const v=videoRef.current, c=state.video
+    if(!v||!c)return
+    v.muted=Boolean(c.muted)
+    v.volume=Math.max(0,Math.min(1,c.volume ?? 0.85))
+    v.loop=Boolean(c.loop)
+    if(c.seekDelta && c.commandId) { try { v.currentTime=Math.max(0,v.currentTime+c.seekDelta) } catch {} }
+    if(c.playing===false) v.pause(); else v.play().catch(()=>{})
+  }, [state.video?.playing,state.video?.muted,state.video?.volume,state.video?.loop,state.video?.commandId])
   const isImg = state.backgroundType === 'image' && state.background
   return <div className="canvas-wrap">
     <div className="canvas-status"><span className={live ? 'live-dot' : 'preview-dot'} /> {live ? 'LIVE' : 'PREVIEW'}</div>
     <div className="presentation-canvas" data-no-translate="true" style={{
       backgroundImage: isImg ? `linear-gradient(rgba(0,0,0,${state.theme.overlay}),rgba(0,0,0,${state.theme.overlay})),url("${fileUrl(state.background)}")` : undefined
     }}>
-      {state.backgroundType === 'video' && state.background && <video src={fileUrl(state.background)} autoPlay loop muted />}
+      {state.backgroundType === 'video' && state.background && <video ref={videoRef} src={fileUrl(state.background)} autoPlay loop muted={Boolean(state.video?.muted ?? false)} />}
       {state.audio?.path && <div className="preview-audio-badge">♫ {state.audio.playing?'AUDIO PLAYING':'AUDIO READY'} · {state.title||'Local audio'}</div>}
       <div className={`canvas-copy align-${state.theme.alignment} layout-${state.layout||'center'}`} style={{fontFamily:state.theme.fontFamily,color:state.theme.textColor,textShadow:state.background?'0 3px 14px rgba(0,0,0,.72)':'none'}}>
         {state.black ? <div className="screen-mode-label">BLACK SCREEN</div> : state.logo ? <div className="vf-logo-mark large">VF</div> : state.layout==='countdown' ? <div className="countdown-copy"><span>{state.timerLabel||'Service starts in'}</span><strong>{formatRemaining(state.timerEndAt)}</strong></div> : <>

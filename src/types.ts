@@ -1,4 +1,4 @@
-export type ModuleKey = 'dashboard' | 'bible' | 'songs' | 'media' | 'playlists' | 'present' | 'themes' | 'production' | 'settings'
+export type ModuleKey = 'dashboard' | 'bible' | 'songs' | 'lyrics' | 'media' | 'playlists' | 'present' | 'themes' | 'production' | 'settings'
 export type OutputKind = 'audience' | 'stage'
 
 export interface DisplayInfo {
@@ -31,8 +31,17 @@ export interface Song {
   author?: string
   ccli?: string
   key?: string
+  source?: string
+  copyright?: string
+  language?: string
+  notes?: string
+  rights?: 'public-domain' | 'licensed' | 'copyrighted' | 'original' | 'unknown'
   sections: SongSection[]
 }
+
+export interface InternetSongResult { title:string; artist?:string; alternateTitle?:string; album?:string; sourceTitle:string; sourceUrl:string; retrievedAt:string; confidence:number; rights:'public-domain'|'licensed'|'copyrighted'|'unknown'; snippet?:string }
+export interface InternetToolState { installed:boolean; running:boolean; version?:string }
+export interface InternetToolsStatus { agentReach:InternetToolState; crawl4ai:InternetToolState; browserUse:InternetToolState; searchBackend:InternetToolState }
 
 export interface MediaItem {
   id: string
@@ -102,6 +111,7 @@ export interface BibleCatalogItem {
   source: string
   url?: string
   bundledFile?: string
+  partialBundledFile?: string
 }
 
 export interface AppData {
@@ -117,7 +127,7 @@ export interface AppData {
 }
 
 
-export type SmartAction = 'SHOW_VERSE' | 'SHOW_TEXT' | 'BLACK' | 'CLEAR_TEXT' | 'LOGO' | 'SET_TEXT_COLOR' | 'SET_ACCENT_COLOR' | 'FIND_SONG' | 'FIND_MEDIA' | 'START_TIMER' | 'SHOW_LOWER_THIRD' | 'STOP_AUDIO' | 'NO_ACTION'
+export type SmartAction = 'SHOW_VERSE' | 'SHOW_TEXT' | 'BLACK' | 'CLEAR_TEXT' | 'LOGO' | 'SET_TEXT_COLOR' | 'SET_ACCENT_COLOR' | 'FIND_SONG' | 'SHOW_SONG_SECTION' | 'NEXT_LYRICS' | 'PREVIOUS_LYRICS' | 'FIND_MEDIA' | 'START_TIMER' | 'SHOW_LOWER_THIRD' | 'STOP_AUDIO' | 'NO_ACTION'
 
 export interface SmartPlan {
   action: SmartAction
@@ -149,8 +159,6 @@ export interface ToolStatus {
   whisperModelInstalled: boolean
   obsInstalled: boolean
   obsRunning: boolean
-  hyperframesInstalled: boolean
-  hyperframesVersion?: string
   companionInstalled: boolean
   companionRunning: boolean
   companionApi: string
@@ -180,6 +188,7 @@ export interface VerseFlowApi {
   getBibleChapter: (code: string, book: string, chapter: number) => Promise<Verse[]>
   searchBible: (query: string, code?: string, limit?: number) => Promise<Verse[]>
   getBibleReference: (reference: string, code?: string) => Promise<Verse | null>
+  suggestBibleReferences: (reference: string, code?: string, limit?: number) => Promise<string[]>
   installBibleFromCatalog: (code: string) => Promise<{ ok: boolean; imported?: number; translation?: string; error?: string }>
   loadData: () => Promise<AppData>
   upsert: (entity: string, value: unknown) => Promise<{ ok: boolean; error?: string }>
@@ -201,15 +210,23 @@ export interface VerseFlowApi {
   whisperStop: () => Promise<{ ok: boolean; error?: string }>
   onWhisperCaption: (callback: (text: string) => void) => () => void
   onCompanionAction: (callback: (action: string) => void) => () => void
+  onTaskProgress: (callback: (progress: {id:string;label:string;percent:number;stage?:string;done?:boolean;error?:boolean}) => void) => () => void
   obsOpen: () => Promise<{ ok: boolean; error?: string }>
   obsConnect: (host: string, port: number, password: string) => Promise<{ ok: boolean; scenes?: string[]; currentScene?: string; error?: string }>
   obsScenes: () => Promise<{ ok: boolean; scenes?: string[]; currentScene?: string; error?: string }>
   obsSetScene: (scene: string) => Promise<{ ok: boolean; error?: string }>
   obsControl: (action: 'startRecord'|'stopRecord'|'startStream'|'stopStream') => Promise<{ ok: boolean; error?: string }>
-  hyperframesStudio: () => Promise<{ ok: boolean; url?: string; error?: string }>
-  hyperframesRender: () => Promise<{ ok: boolean; path?: string; error?: string }>
   companionOpen: () => Promise<{ ok: boolean; error?: string }>
   copyText: (text: string) => Promise<{ ok: boolean }>
+  internetToolsStatus: () => Promise<InternetToolsStatus>
+  installInternetAgentTools: () => Promise<{ok:boolean;error?:string}>
+  searchInternetSongs: (query:string) => Promise<{ok:boolean;results?:InternetSongResult[];offline?:boolean;error?:string}>
+  extractInternetPage: (url:string) => Promise<{ok:boolean;url?:string;title?:string;markdown?:string;error?:string}>
+  openInternetSource: (url:string) => Promise<{ok:boolean;error?:string}>
+  importAuthorizedLyrics: () => Promise<{ok:boolean;text?:string;path?:string;error?:string}>
+  exportLyricsText: (title:string,text:string) => Promise<{ok:boolean;path?:string;error?:string}>
+  organizeLyrics: (text:string) => Promise<{ok:boolean;sections?:SongSection[];changed?:boolean;original?:string;organized?:string;error?:string}>
+  generateOriginalLyrics: (prompt:string) => Promise<{ok:boolean;song?:Song;error?:string}>
   systemCheck: () => Promise<SystemCheckResult>
   logError: (source: string, message: string, stack?: string) => Promise<{ ok: boolean; path?: string }>
 }

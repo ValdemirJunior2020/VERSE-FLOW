@@ -27,6 +27,7 @@ contextBridge.exposeInMainWorld('verseflow', {
   getBibleChapter: (code, book, chapter) => ipcRenderer.invoke('bible:chapter', { code, book, chapter }),
   searchBible: (query, code, limit) => ipcRenderer.invoke('bible:search', { query, code, limit }),
   getBibleReference: (reference, code) => ipcRenderer.invoke('bible:reference', { reference, code }),
+  suggestBibleReferences: (reference, code, limit) => ipcRenderer.invoke('bible:suggest', { reference, code, limit }),
   installBibleFromCatalog: (code) => ipcRenderer.invoke('bible:install-catalog', code),
   loadData: () => ipcRenderer.invoke('data:load'),
   upsert: (entity, value) => ipcRenderer.invoke('data:upsert', { entity, value }),
@@ -39,6 +40,15 @@ contextBridge.exposeInMainWorld('verseflow', {
   toolStatus: () => ipcRenderer.invoke('tools:status'),
   openOptionalToolsInstaller: () => ipcRenderer.invoke('tools:open-installer'),
   smartCommand: (command, context) => ipcRenderer.invoke('smart:command', { command, context }),
+  internetToolsStatus: () => ipcRenderer.invoke('internet:status'),
+  installInternetAgentTools: () => ipcRenderer.invoke('internet:install'),
+  searchInternetSongs: (query) => ipcRenderer.invoke('lyrics:internet-search', { query }),
+  extractInternetPage: (url) => ipcRenderer.invoke('internet:extract', { url }),
+  openInternetSource: (url) => ipcRenderer.invoke('internet:open-source', { url }),
+  importAuthorizedLyrics: () => ipcRenderer.invoke('lyrics:import-authorized'),
+  exportLyricsText: (title, text) => ipcRenderer.invoke('lyrics:export-text', { title, text }),
+  organizeLyrics: (text) => ipcRenderer.invoke('lyrics:organize', { text }),
+  generateOriginalLyrics: (prompt) => ipcRenderer.invoke('lyrics:generate-original', { prompt }),
   downloadMediaUrl: (url) => ipcRenderer.invoke('media:download-url', url),
   mpvLaunch: (path, screenIndex) => ipcRenderer.invoke('mpv:launch', { path, screenIndex }),
   mpvCommand: (command) => ipcRenderer.invoke('mpv:command', command),
@@ -56,13 +66,16 @@ contextBridge.exposeInMainWorld('verseflow', {
     ipcRenderer.on('companion:action', listener)
     return () => ipcRenderer.removeListener('companion:action', listener)
   },
+  onTaskProgress: (callback) => {
+    const listener = (_event, progress) => callback(progress)
+    ipcRenderer.on('task:progress', listener)
+    return () => ipcRenderer.removeListener('task:progress', listener)
+  },
   obsOpen: () => ipcRenderer.invoke('obs:open'),
   obsConnect: (host, port, password) => ipcRenderer.invoke('obs:connect', { host, port, password }),
   obsScenes: () => ipcRenderer.invoke('obs:scenes'),
   obsSetScene: (scene) => ipcRenderer.invoke('obs:set-scene', scene),
   obsControl: (action) => ipcRenderer.invoke('obs:control', action),
-  hyperframesStudio: () => ipcRenderer.invoke('hyperframes:studio'),
-  hyperframesRender: () => ipcRenderer.invoke('hyperframes:render'),
   companionOpen: () => ipcRenderer.invoke('companion:open'),
   copyText: (text) => ipcRenderer.invoke('clipboard:copy', text),
   systemCheck: () => ipcRenderer.invoke('diagnostics:run'),

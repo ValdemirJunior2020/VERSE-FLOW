@@ -1,0 +1,6 @@
+VerseFlow V27
+- Lyrics internet matches have their own vertical scrollbar.
+- Search prioritizes lyric-bearing pages over streaming/smart-link pages.
+- USE / EDIT checks the selected source and never treats metadata as lyrics.
+- Explicit public-domain/open lyric pages can populate the editor automatically.
+- Streaming/redirect pages explain that they do not contain lyric text.

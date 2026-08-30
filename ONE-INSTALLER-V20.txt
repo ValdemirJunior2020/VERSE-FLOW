@@ -1,0 +1,26 @@
+VERSEFLOW V20 - ONE SMART BAT INSTALLER
+
+There is exactly one BAT file in the project:
+  INSTALL_VERSEFLOW.bat
+
+Default double-click behavior:
+- checks existing software first
+- installs only missing tools
+- runs VerseFlow dependency verification and tests
+- builds NSIS installer and Portable EXE
+- does not modify .git or .env files
+
+Optional command-line modes:
+  INSTALL_VERSEFLOW.bat --status
+  INSTALL_VERSEFLOW.bat --tools-only
+  INSTALL_VERSEFLOW.bat --dev
+  INSTALL_VERSEFLOW.bat --check
+
+Packaging fix:
+NSIS and Portable builds now run in separate electron-builder staging folders.
+This prevents the prior 7-Zip failure where files in win-unpacked disappeared while NSIS was archiving them.
+
+Python internet tools remain isolated under:
+  %LOCALAPPDATA%\VerseFlow\InternetAgent
+
+No global click/pip dependency repair is performed.

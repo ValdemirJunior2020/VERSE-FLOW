@@ -4,7 +4,7 @@ import { defaultTheme } from '../presentation'
 
 const initial: PresentationState = {
   sequence: 0, mode: 'idle', title: '', text: '', reference: '', nextTitle: '',
-  theme: defaultTheme, black: false, clearText: false, logo: false, frozen: false, backgroundType: 'solid', video: {playing:true,muted:true,volume:0.8,loop:true}
+  theme: defaultTheme, black: false, clearText: false, logo: false, frozen: false, backgroundType: 'solid', video: {playing:true,muted:false,volume:0.85,loop:true}
 }
 
 function mediaUrl(path?: string) {

@@ -15,8 +15,14 @@ describe('Sunday-safe telão detection',()=>{
   })
   it('remembers a chosen audience display and blocks missing output',()=>{
     expect(app).toContain("audienceDisplayId")
-    expect(app).toContain('TELÃO NÃO DETECTADO — LIVE bloqueado')
+    expect(app).toContain('Timer ready — no audience screen connected')
     expect(app).toContain('openOnSelected')
+  })
+
+  it('auto-selects a connected non-primary audience display',()=>{
+    expect(app).toContain('detected.find(d=>!d.primary)')
+    expect(app).toContain("saveSetting('audienceDisplayId',saved)")
+    expect(app).toContain('Audience screen detected:')
   })
   it('does not silently keep audience output on a removed display',()=>{
     expect(main).toContain("screen.on('display-removed'")

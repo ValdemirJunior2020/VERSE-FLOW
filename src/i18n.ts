@@ -167,7 +167,6 @@ const dictionaries: Record<'pt'|'es',Record<string,string>> = {
   "Live microphone transcription will appear here.": "A transcrição ao vivo do microfone aparecerá aqui.",
   "Scene": "Cena",
   "Set Scene": "Definir Cena",
-  "HyperFrames + FFmpeg for cinematic countdowns, intros and announcement videos.": "HyperFrames + FFmpeg para contagens regressivas, introduções e anúncios cinematográficos.",
   "VerseFlow exposes local HTTP actions for Bitfocus Companion buttons.": "VerseFlow expõe ações HTTP locais para botões do Bitfocus Companion.",
   "Smart Presenter AI": "IA do Apresentador Inteligente",
   "Ollama qwen3:0.6b remains optional and local. Scripture is never rewritten.": "Ollama qwen3:0.6b continua opcional e local. A Escritura nunca é reescrita.",
@@ -467,7 +466,6 @@ const dictionaries: Record<'pt'|'es',Record<string,string>> = {
   "Live microphone transcription will appear here.": "La transcripción en vivo del micrófono aparecerá aquí.",
   "Scene": "Escena",
   "Set Scene": "Cambiar Escena",
-  "HyperFrames + FFmpeg for cinematic countdowns, intros and announcement videos.": "HyperFrames + FFmpeg para cuentas regresivas, intros y anuncios cinematográficos.",
   "VerseFlow exposes local HTTP actions for Bitfocus Companion buttons.": "VerseFlow expone acciones HTTP locales para botones de Bitfocus Companion.",
   "Smart Presenter AI": "IA del Presentador Inteligente",
   "Ollama qwen3:0.6b remains optional and local. Scripture is never rewritten.": "Ollama qwen3:0.6b sigue siendo opcional y local. La Escritura nunca se reescribe.",
@@ -641,7 +639,11 @@ function applyAttrs(el:Element,lang:Language){
     if(!el.hasAttribute(attr)) continue
     const current=el.getAttribute(attr)||''
     if(!(attr in originals)) originals[attr]=current
-    el.setAttribute(attr,translateDynamic(originals[attr],lang))
+    const translated=translateDynamic(originals[attr],lang)
+    // MutationObserver watches these same attributes. Writing an unchanged
+    // value can schedule another attribute mutation and create a feedback
+    // loop that starves React/Electron input handling.
+    if(current!==translated) el.setAttribute(attr,translated)
   }
 }
 

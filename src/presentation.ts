@@ -30,7 +30,7 @@ export function itemToPresentation(item: ServiceItem | undefined, next: ServiceI
   if (!item) {
     return {
       sequence, mode: 'idle', title: '', text: '', reference: '', nextTitle: next?.title || '',
-      theme, black: false, clearText: false, logo: false, frozen: false, backgroundType: 'solid', video: {playing:true,muted:true,volume:0.8,loop:true}
+      theme, black: false, clearText: false, logo: false, frozen: false, backgroundType: 'solid', video: {playing:true,muted:false,volume:0.85,loop:true}
     }
   }
   const p = item.payload || {}
@@ -51,6 +51,6 @@ export function itemToPresentation(item: ServiceItem | undefined, next: ServiceI
     frozen: false,
     notes: typeof p.notes === 'string' ? p.notes : '',
     audio: typeof p.audioPath === 'string' ? {path:p.audioPath,playing:true,volume:Number(p.audioVolume ?? .85),loop:Boolean(p.audioLoop)} : undefined,
-    video: {playing:true,muted:true,volume:0.8,loop:true}
+    video: {playing:true,muted:false,volume:0.85,loop:true}
   }
 }

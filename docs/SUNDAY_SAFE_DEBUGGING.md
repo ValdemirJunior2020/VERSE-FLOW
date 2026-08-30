@@ -8,6 +8,6 @@ Backgrounds and music are intentionally separate from fullscreen media. **USE AS
 ## For the developer
 Cline project rules are stored in `.clinerules/verseflow.md`. They tell the coding agent to preserve the offline live path and run tests after changes.
 
-`CHECK_VERSEFLOW.bat` runs Vitest, the Vite production build, and the Playwright Electron flow. The Playwright test opens the real Electron application, verifies all 12 built-in backgrounds are present, confirms changing a background does not erase slide text, and runs the in-app System Check.
+`INSTALL_VERSEFLOW.bat --check` runs Vitest, the Vite production build, and the Playwright Electron flow. The Playwright test opens the real Electron application, verifies all 12 built-in backgrounds are present, confirms changing a background does not erase slide text, and runs the in-app System Check.
 
 FFmpeg remains optional. Use the existing Media Doctor when a local video is incompatible. VerseFlow core presentation must still launch when FFmpeg is absent.

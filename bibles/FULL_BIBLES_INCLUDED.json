@@ -3,11 +3,12 @@
     "code": "ASV",
     "name": "American Standard Version",
     "language": "English",
-    "verses": 31101,
+    "verses": 31086,
     "books": 66,
     "first": "Genesis 1:1",
     "last": "Revelation 22:21",
-    "source_file": "EN-English/asv.json"
+    "source_file": "user-provided/ASV_bible.json",
+    "always_available": true
   },
   {
     "code": "ASV-STRONGS",
@@ -178,5 +179,50 @@
     "first": "בְּרֵאשִׁית 1:1",
     "last": "חזוֹן יוֹחָנָן 22:21",
     "source_file": "HE-עברית/he_modern.json"
+  },
+  {
+    "code": "AKJV",
+    "name": "American King James Version",
+    "language": "English",
+    "verses": 31102,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "user-provided/AKJV_bible.json",
+    "always_available": true
+  },
+  {
+    "code": "AMP",
+    "name": "Amplified Bible",
+    "language": "English",
+    "verses": 31103,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "user-provided/AMP_bible.json",
+    "always_available": true
+  },
+  {
+    "code": "NKJV",
+    "name": "New King James Version",
+    "language": "English",
+    "verses": 31102,
+    "books": 66,
+    "first": "Genesis 1:1",
+    "last": "Revelation 22:21",
+    "source_file": "user-provided/NKJV_books",
+    "always_available": true
+  },
+  {
+    "code": "BRG-PARTIAL",
+    "name": "BRG (Partial: Genesis–Numbers)",
+    "language": "English",
+    "verses": 4893,
+    "books": 4,
+    "first": "Genesis 1:1",
+    "last": "Numbers 36:13",
+    "source_file": "user-provided/BRG_books",
+    "always_available": true,
+    "partial": true
   }
 ]

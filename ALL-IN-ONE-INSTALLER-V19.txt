@@ -1,0 +1,37 @@
+VERSEFLOW V19 - SMART ALL-IN-ONE INSTALLER
+
+New master installer:
+  INSTALL_VERSEFLOW.bat
+
+Modes:
+  1 RECOMMENDED - VerseFlow core + Internet Agent + production tools
+  3 STATUS      - checks the PC and installs nothing
+
+The installers now check before downloading/installing whenever practical:
+- Node/npm: reuses system or VerseFlow portable runtime.
+- npm packages: skips npm install when node_modules passes npm ls --depth=0.
+- Agent-Reach: isolated venv import check.
+- mcporter: package check under isolated VerseFlow Node tools.
+- Crawl4AI: isolated venv import check.
+- Browser Use: isolated venv import check.
+- Ollama: executable check; qwen3:0.6b model check before pull.
+- yt-dlp: VerseFlowTools executable check.
+- Deno: PATH check.
+- FFmpeg: PATH check.
+- mpv: PATH check.
+- whisper.cpp: executable + base-model check.
+- OBS Studio: default install path check.
+- : VerseFlow npm-global command check.
+- Bitfocus Companion: common install-path checks before WinGet.
+
+Internet Python tools remain isolated under:
+  %LOCALAPPDATA%\VerseFlow\InternetAgent
+They do not repair or replace shared/global Python packages.
+
+.git verification:
+- Original V18 .git file hashes compared with V19 working tree.
+- 28 .git files checked.
+- No differences found.
+
+.env:
+- No .env files were modified or created by this update.

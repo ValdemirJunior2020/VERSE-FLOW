@@ -1,0 +1,17 @@
+VerseFlow V17 Internet Agent fix
+
+- No global Python dependency repair.
+- Agent-Reach uses its own venv under %LOCALAPPDATA%\VerseFlow\InternetAgent\agent-reach.
+- Crawl4AI uses its own venv under %LOCALAPPDATA%\VerseFlow\InternetAgent\crawl4ai.
+- Browser Use uses its own venv under %LOCALAPPDATA%\VerseFlow\InternetAgent\browser-use.
+- mcporter is installed privately under %LOCALAPPDATA%\VerseFlow\InternetAgent\node.
+- Browser Use click pins can no longer conflict with huggingface-hub or Agent-Reach in VerseFlow.
+- Crawl4AI extraction falls back to Jina Reader if its isolated environment is unavailable.
+- URL handling remains limited to validated http/https data.
+- .git and .env files are not modified by the installer.
+
+Validation in build sandbox:
+- electron/internet-agent.cjs passed node --check.
+- package.json parsed successfully.
+- npm dependency download was attempted but timed out in the sandbox before Vitest became available.
+- The user's Windows run had 43/45 tests passing before this fix; the two failing Internet Agent assertions were corrected with matching implementation coverage.

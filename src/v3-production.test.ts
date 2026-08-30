@@ -18,11 +18,11 @@ describe('VerseFlow V3 multilingual production center',()=>{
   it('wires the production tools to Electron IPC',()=>{
     const preload=read('electron/preload.cjs')
     const tools=read('electron/production-tools.cjs')
-    for(const key of ['mpv:launch','ffmpeg:compatible','whisper:start','obs:open','obs:connect','hyperframes:render','companion:open']){
+    for(const key of ['mpv:launch','ffmpeg:compatible','whisper:start','obs:open','obs:connect','companion:open']){
       expect(preload+tools).toContain(key)
     }
     expect(tools).toContain('127.0.0.1')
-    expect(tools).toContain('data-composition-id="verseflow-welcome"')
+    expect(preload+tools).not.toContain('hyperframes:')
   })
 
   it('keeps live operator safety features and smart actions',()=>{
@@ -39,7 +39,7 @@ describe('VerseFlow V3 multilingual production center',()=>{
   })
 
   it('installs yt-dlp with the recommended Deno runtime and keeps full offline Bibles',()=>{
-    const installer=read('INSTALL_OPTIONAL_OPEN_SOURCE_TOOLS.bat')
+    const installer=read('INSTALL_VERSEFLOW.bat')+read('scripts/install-all-tools.ps1')
     const pkg=JSON.parse(read('package.json'))
     expect(installer).toContain('Deno')
     expect(installer).toContain('yt-dlp')

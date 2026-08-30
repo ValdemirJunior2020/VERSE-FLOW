@@ -1,0 +1,10 @@
+VERSEFLOW V31
+
+- Removed the fixed footer Quick Bar.
+- Moved all Quick Bar actions into a scrollable left sidebar under LIVE CONTROLS.
+- Enabled full-window vertical scrolling for the main app content.
+- Sidebar has its own vertical scrolling.
+- Added FORMAT INTO 4-LINE SLIDES: preserves words/order and creates Slide 1, Slide 2, etc., max 4 non-empty lines each.
+- Added COPY ALL LYRICS, SAVE TO MY LYRICS, EXPORT FULL LYRICS, PREVIEW, ADD ENTIRE SONG TO SERVICE, and SEND LIVE actions.
+- Added TXT export through a native Windows Save dialog.
+- .git and .env files are not modified by these changes.

@@ -1,0 +1,7 @@
+VERSEFLOW V33 - PYTHON IMPORT PROBE FIX
+
+Fixed the smart installer so a missing Python module during first-run setup is treated as a normal detection result, not a terminating PowerShell NativeCommandError.
+
+The installer now probes isolated Python modules using System.Diagnostics.Process, captures stdout/stderr safely, and returns true/false from the process exit code. This allows Agent-Reach, Crawl4AI, and Browser Use to proceed to installation when their module is not present yet.
+
+.git and .env files are not modified by this change.

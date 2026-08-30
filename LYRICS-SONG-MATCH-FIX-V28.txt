@@ -1,0 +1,8 @@
+VERSEFLOW V28 SONG MATCH FIX
+
+- Rejects Genius /artists/ and other artist/profile pages as song results.
+- Rejects users, profiles, tags, search, charts, playlists, and album collection pages.
+- Adds song-page scoring using query token overlap and lyric-page URL/title hints.
+- Cleans Markdown-link titles such as [Kristene DiMarco]() before display.
+- Adds a second UI guard so a profile page cannot be selected even if a provider returns it unexpectedly.
+- Does not modify .git or .env files.

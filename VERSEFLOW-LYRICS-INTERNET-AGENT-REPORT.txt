@@ -1,0 +1,67 @@
+VERSEFLOW - LYRICS + LOCAL INTERNET AGENT UPDATE
+Date: 2026-08-29
+
+Architecture used
+- Ollama: local reasoning/default AI. No OpenAI requirement added.
+- Panniantong/Agent-Reach: internet access setup/health/router layer. VerseFlow uses the Exa search bridge installed/configured by Agent-Reach.
+- unclecode/crawl4ai: optional clean webpage extraction through a fixed, read-only Python call.
+- browser-use/browser-use: installed/status-ready as an optional browser fallback; normal song search does not depend on browser automation.
+
+Collection repos confirmed present
+- Panniantong/Agent-Reach
+- unclecode/crawl4ai
+- browser-use/browser-use
+- ItzCrazyKns/Perplexica
+- firecrawl/firecrawl
+- NousResearch/hermes-agent
+- FoundationAgents/OpenManus
+
+Not wired into VerseFlow runtime
+- Perplexica, Firecrawl, Hermes Agent, OpenManus. They overlap the chosen layers and would add unnecessary services/dependencies for this focused feature.
+
+Major additions
+- New main sidebar LYRICS section.
+- Search Lyrics / My Lyrics / Modern-Licensed / Public Domain / Create Your Own / Create Original With Ollama.
+- Local-first fuzzy song matching, then Agent-Reach internet search.
+- Internet result provenance: source title, source URL, retrieval date, confidence, rights classification.
+- Copyright-safe modern-song flow: no automatic permanent scraping/storage of modern lyrics.
+- Authorized local lyrics text/JSON import.
+- Structured section editor with duplicate/delete/move/rename and section add controls.
+- Ollama organizer that rejects results if lyric wording changes.
+- Ollama original worship-song generation marked Original / AI Assisted.
+- Presentation-ready lyric slides with max 4 lines, section labels, Preview/Live/Next/Previous, and entire-song service insertion.
+- Smart Presenter lyric actions: find song, show section, repeat/show chorus/bridge/verse, next lyrics, previous lyrics.
+- Settings Internet Agent status and Windows installer.
+- Prompt-injection guardrails: web content is treated as untrusted data; URLs are validated; website text cannot become shell commands or filesystem actions.
+
+Offline behavior
+- Lyrics editor and saved lyrics remain local.
+- Internet search reports local-only fallback when unavailable.
+- Bundled Amazing Grace starter is explicitly marked Public Domain.
+
+Validation performed in this sandbox
+PASS: electron/main.cjs syntax check
+PASS: electron/preload.cjs syntax check
+PASS: electron/internet-agent.cjs syntax check
+PASS: electron/db.cjs syntax check
+PASS: src/types.ts + src/lyrics.ts TypeScript check
+PASS: TSX syntax parse found no syntax diagnostics in App.tsx or LyricsPage.tsx
+PASS: package.json JSON parse
+PASS: .git byte/hash comparison before vs after - IDENTICAL
+PASS: no .env files were present; none were created or modified
+
+Validation blocked by sandbox dependency availability
+- The uploaded ZIP excludes node_modules.
+- npm install was attempted twice but the sandbox could not finish downloading dependencies before execution timeout.
+- Therefore npm test could not run because vitest is not installed.
+- npm run build could not run because vite is not installed.
+- Electron E2E could not run because project dependencies are not installed.
+
+On a normal Windows machine with internet, run:
+  npm install
+  npx tsc --noEmit
+  npm test
+  npm run build
+  npm run test:e2e
+
+Then use INSTALL_VERSEFLOW.bat to install/check the optional internet-agent tools.

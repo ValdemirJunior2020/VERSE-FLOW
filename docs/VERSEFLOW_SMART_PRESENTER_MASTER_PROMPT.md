@@ -35,7 +35,7 @@ Examples:
 - “Black screen” → activate safety blackout.
 
 OPTIONAL OPEN-SOURCE TOOLS
-Provide INSTALL_OPTIONAL_OPEN_SOURCE_TOOLS.bat with:
+Provide INSTALL_VERSEFLOW.bat with:
 - Ollama official Windows installation.
 - Pull qwen3:0.6b (~523 MB model) as the lightweight Smart Presenter model.
 - Download official Windows yt-dlp.exe into %LOCALAPPDATA%\VerseFlowTools.
@@ -66,7 +66,7 @@ TOP TOOLBAR — EVERY CONTROL MUST WORK
 - READY/LIVE indicator reflects real state.
 
 WINDOWS PACKAGING
-Maintain INSTALL_VERSEFLOW.bat and DEV_VERSEFLOW.bat. Use portable Node 22 LTS when needed. electron-builder creates NSIS installer and portable EXE. Bundle Bible JSON correctly. Package optional-tools BAT as an extraResource. Avoid native Node modules where possible; use sql.js SQLite.
+Maintain INSTALL_VERSEFLOW.bat and INSTALL_VERSEFLOW.bat --dev. Use portable Node 22 LTS when needed. electron-builder creates NSIS installer and portable EXE. Bundle Bible JSON correctly. Package optional-tools BAT as an extraResource. Avoid native Node modules where possible; use sql.js SQLite.
 
 QUALITY BAR
 No decorative dead buttons. Each visible action must either work or be deliberately disabled with a reason. Add regression tests for critical wiring: Bible packaging, live presentation state, Smart Presenter IPC, top toolbar actions, YouTube presentation wiring, and full bundled Bible coverage. Prioritize reliable live operation over experimental features.

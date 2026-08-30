@@ -25,7 +25,7 @@ SE ALGUMA COISA DER ERRO
 - Seus dados não são apagados por essa tela de erro.
 
 PARA QUEM DESENVOLVE O VERSEFLOW
-- CHECK_VERSEFLOW.bat roda testes, build e o teste automático Playwright/Electron.
+- INSTALL_VERSEFLOW.bat --check roda testes, build e o teste automático Playwright/Electron.
 - .clinerules/verseflow.md contém regras para o Cline não quebrar o fluxo principal.
 - FFmpeg continua como Media Doctor opcional para vídeos difíceis.
 

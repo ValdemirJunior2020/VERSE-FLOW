@@ -1,0 +1,11 @@
+VERSEFLOW V21 - SMART WINGET DETECTION FIX
+
+Fixes the V20 failure where WinGet reported an already-installed package (for example shinchiro.mpv) and the installer treated the non-zero result as a fatal installation error.
+
+Changes:
+- WinGet package database is checked before install.
+- Existing WinGet packages are skipped even if their executable is not currently in PATH.
+- After a non-zero WinGet install result, VerseFlow re-checks whether the package is actually installed before failing.
+- mpv is detected from PATH, common Windows locations, WinGet Links, or WinGet package registration.
+- Only one BAT remains: INSTALL_VERSEFLOW.bat.
+- .git was not modified.

@@ -11,7 +11,6 @@ const MPV_PIPE = '\\\\.\\pipe\\verseflow-mpv'
 
 let mpvProcess = null
 let whisperProcess = null
-let hyperframesProcess = null
 let companionServer = null
 let obsSocket = null
 let obsIdentified = false
@@ -44,6 +43,22 @@ function findRecursive(dir, filename, depth=5) {
   return null
 }
 
+function winGetExe(filename, packageHint='') {
+  const local=process.env.LOCALAPPDATA||''
+  const root=path.join(local,'Microsoft','WinGet','Packages')
+  if(!fs.existsSync(root)) return null
+  try{
+    const dirs=fs.readdirSync(root,{withFileTypes:true})
+      .filter(x=>x.isDirectory() && (!packageHint || x.name.toLowerCase().includes(packageHint.toLowerCase())))
+      .map(x=>path.join(root,x.name))
+    for(const dir of dirs){
+      const found=findRecursive(dir,filename,7)
+      if(found)return found
+    }
+  }catch{}
+  return null
+}
+
 function commandVersion(exe,args=['--version']){
   if(!exe) return ''
   try{return String(execFileSync(exe,args,{encoding:'utf8',windowsHide:true,timeout:3500})).trim().split(/\r?\n/)[0]||''}
@@ -62,22 +77,25 @@ function toolPaths(app){
   const pf=process.env.ProgramFiles||'C:\\Program Files'
   const tools=path.join(local,'VerseFlowTools')
   const whisperRoot=path.join(tools,'whisper')
-  const npmGlobal=path.join(tools,'npm-global')
   return {
     tools,
     ffmpeg:firstExisting([
       path.join(tools,'ffmpeg','bin','ffmpeg.exe'),
+      winGetExe('ffmpeg.exe','Gyan.FFmpeg'),
       whereExe('ffmpeg.exe'),
       whereExe('ffmpeg')
     ]),
     ffprobe:firstExisting([
       path.join(tools,'ffmpeg','bin','ffprobe.exe'),
+      winGetExe('ffprobe.exe','Gyan.FFmpeg'),
       whereExe('ffprobe.exe'),
       whereExe('ffprobe')
     ]),
     mpv:firstExisting([
       path.join(tools,'mpv','mpv.exe'),
+      path.join(pf,'MPV Player','mpv.exe'),
       path.join(pf,'mpv','mpv.exe'),
+      winGetExe('mpv.exe','shinchiro.mpv'),
       whereExe('mpv.exe'),
       whereExe('mpv')
     ]),
@@ -93,12 +111,6 @@ function toolPaths(app){
     obs:firstExisting([
       path.join(pf,'obs-studio','bin','64bit','obs64.exe'),
       whereExe('obs64.exe')
-    ]),
-    hyperframes:firstExisting([
-      path.join(npmGlobal,'hyperframes.cmd'),
-      path.join(npmGlobal,'bin','hyperframes.cmd'),
-      whereExe('hyperframes.cmd'),
-      whereExe('hyperframes')
     ]),
     companion:firstExisting([
       path.join(pf,'Companion','companion.exe'),
@@ -121,8 +133,6 @@ function getProductionToolStatus(app){
     whisperModelInstalled:Boolean(p.whisperModel),
     obsInstalled:Boolean(p.obs),
     obsRunning:processRunning('obs64.exe'),
-    hyperframesInstalled:Boolean(p.hyperframes),
-    hyperframesVersion:commandVersion(p.hyperframes,['--version']),
     companionInstalled:Boolean(p.companion),
     companionRunning:processRunning('companion.exe'),
     companionApi:`http://127.0.0.1:${COMPANION_PORT}`
@@ -298,46 +308,6 @@ async function obsSceneList(){
   return {scenes,currentScene:data.currentProgramSceneName||''}
 }
 
-function ensureHyperframesProject(app){
-  const dir=path.join(app.getPath('userData'),'motion-studio')
-  fs.mkdirSync(dir,{recursive:true})
-  const index=path.join(dir,'index.html')
-  if(!fs.existsSync(index)){
-    fs.writeFileSync(index,`<!doctype html><html><head><meta charset="utf-8"><style>
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#080808;color:white;font-family:Arial,sans-serif}
-#root{position:relative;width:1920px;height:1080px;overflow:hidden;background:radial-gradient(circle at center,#3c2c0b,#080808 60%)}
-.scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column}
-h1{font-size:110px;margin:0;color:#f0c86a;letter-spacing:.03em;text-shadow:0 8px 40px rgba(0,0,0,.55)}p{font-size:42px;opacity:.9}
-</style></head><body><div id="root" data-composition-id="verseflow-welcome" data-start="0" data-width="1920" data-height="1080"><div class="scene clip" data-start="0" data-duration="10" data-track-index="0"><h1>VERSEFLOW</h1><p>Welcome to worship</p></div></div></body></html>`,'utf8')
-  }
-  return dir
-}
-
-function openHyperframesStudio(app,shell){
-  const exe=toolPaths(app).hyperframes
-  if(!exe) throw new Error('HyperFrames is not installed.')
-  const dir=ensureHyperframesProject(app)
-  if(hyperframesProcess && !hyperframesProcess.killed){try{hyperframesProcess.kill()}catch{}}
-  hyperframesProcess=spawn(exe,['preview','--port','3002'],{cwd:dir,windowsHide:true,shell:true})
-  hyperframesProcess.on('exit',()=>{hyperframesProcess=null})
-  setTimeout(()=>shell.openExternal('http://127.0.0.1:3002'),1200)
-  return {ok:true,url:'http://127.0.0.1:3002'}
-}
-
-function renderHyperframes(app){
-  return new Promise((resolve,reject)=>{
-    const exe=toolPaths(app).hyperframes
-    if(!exe)return reject(new Error('HyperFrames is not installed.'))
-    const dir=ensureHyperframesProject(app)
-    const out=path.join(dir,`verseflow-motion-${Date.now()}.mp4`)
-    const child=spawn(exe,['render','-o',out],{cwd:dir,windowsHide:true,shell:true})
-    let err=''
-    child.stderr.on('data',d=>{err+=d.toString();if(err.length>12000)err=err.slice(-12000)})
-    child.on('error',reject)
-    child.on('close',code=>code===0&&fs.existsSync(out)?resolve(out):reject(new Error((err||`HyperFrames exited with code ${code}`).slice(-1600))))
-  })
-}
-
 function startCompanionApi(getControlWindow,getPresentationState,broadcast){
   if(companionServer)return
   const server=http.createServer((req,res)=>{
@@ -413,8 +383,6 @@ function registerProductionTools({app,ipcMain,shell,clipboard,getControlWindow})
     const map={startRecord:'StartRecord',stopRecord:'StopRecord',startStream:'StartStream',stopStream:'StopStream'}
     try{if(!map[action])throw new Error('Unknown OBS action.');await obsRequest(map[action]);return{ok:true}}catch(e){return{ok:false,error:e.message}}
   })
-  ipcMain.handle('hyperframes:studio',async()=>{try{return openHyperframesStudio(app,shell)}catch(e){return{ok:false,error:e.message}}})
-  ipcMain.handle('hyperframes:render',async()=>{try{return{ok:true,path:await renderHyperframes(app)}}catch(e){return{ok:false,error:e.message}}})
   ipcMain.handle('companion:open',async()=>{
     try{
       const exe=toolPaths(app).companion
@@ -429,9 +397,8 @@ function registerProductionTools({app,ipcMain,shell,clipboard,getControlWindow})
 function shutdownProductionTools(){
   try{mpvProcess?.kill()}catch{}
   try{whisperProcess?.kill()}catch{}
-  try{hyperframesProcess?.kill()}catch{}
   try{companionServer?.close()}catch{}
   disconnectObs()
 }
 
-module.exports={getProductionToolStatus,registerProductionTools,startCompanionApi,shutdownProductionTools,COMPANION_PORT}
+module.exports={getProductionToolStatus,getProductionToolPaths:toolPaths,registerProductionTools,startCompanionApi,shutdownProductionTools,COMPANION_PORT}

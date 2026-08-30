@@ -14,8 +14,7 @@ Use **Probe Media** to inspect codecs/resolution/duration. Use **Make Compatible
 ## OBS Studio / obs-websocket
 Click **Open OBS**, then in OBS open **Tools → WebSocket Server Settings**. Keep authentication enabled, copy the password into VerseFlow, and connect on the default v5 port 4455. VerseFlow can choose program scenes and start/stop recording or streaming.
 
-## HyperFrames
-Motion Studio creates a local 1920×1080 HyperFrames composition. **Open Motion Studio** previews it; **Render Motion** renders MP4 and automatically adds the result to VerseFlow Media. HyperFrames requires Node.js 22+ and FFmpeg.
+Motion Studio creates a local 1920×1080  composition. **Open Motion Studio** previews it; **Render Motion** renders MP4 and automatically adds the result to VerseFlow Media.  requires Node.js 22+ and FFmpeg.
 
 ## Bitfocus Companion / Stream Deck
 VerseFlow exposes a localhost-only HTTP control surface on `http://127.0.0.1:35677`. Use the displayed action URLs for Companion buttons: black, clear, logo, empty, live, next and previous. The server is intentionally loopback-only, not exposed to the internet.

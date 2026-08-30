@@ -7,7 +7,7 @@ describe('bundled full Bibles', () => {
     const catalog = JSON.parse(fs.readFileSync(path.resolve(process.cwd(),'src/data/bible-catalog.json'),'utf8'))
     const bundled = catalog.filter((x:any)=>x.bundledFile)
 
-    expect(bundled.length).toBe(18)
+    expect(bundled.length).toBeGreaterThanOrEqual(21)
 
     for (const item of bundled) {
       const file = path.resolve(process.cwd(),'bibles/bundled',item.bundledFile)
@@ -24,6 +24,15 @@ describe('bundled full Bibles', () => {
       expect(last.chapter).toBe(22)
       expect(last.verse).toBe(21)
     }
+  })
+
+  it('keeps the uploaded BRG set available but clearly marked partial', () => {
+    const catalog = JSON.parse(fs.readFileSync(path.resolve(process.cwd(),'src/data/bible-catalog.json'),'utf8'))
+    const brg = catalog.find((x:any)=>x.code==='BRG-PARTIAL')
+    expect(brg?.partialBundledFile).toBe('brg_partial_user.json')
+    const bible = JSON.parse(fs.readFileSync(path.resolve(process.cwd(),'bibles/bundled',brg.partialBundledFile),'utf8'))
+    expect(bible.verses.length).toBeGreaterThan(3000)
+    expect(new Set(bible.verses.map((v:any)=>v.book))).toEqual(new Set(['Genesis','Exodus','Leviticus','Numbers']))
   })
 
   it('packages the bundled Bible directory in Windows builds', () => {

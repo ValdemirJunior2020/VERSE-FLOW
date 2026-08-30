@@ -1,0 +1,8 @@
+VerseFlow V34 Timer Audience Auto-Live
+
+- START TIMER now routes directly through the audience LIVE path.
+- Preview stays local-only.
+- If no audience display was saved, VerseFlow automatically chooses the first connected non-primary display.
+- The chosen audience display is remembered.
+- If no second display/projector exists, VerseFlow shows a clear message instead of silently doing nothing.
+- The operator's primary monitor is never auto-selected as the audience output.

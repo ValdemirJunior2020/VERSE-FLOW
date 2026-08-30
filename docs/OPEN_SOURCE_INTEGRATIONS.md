@@ -2,13 +2,6 @@
 
 These integrations are deliberately outside the core live engine.
 
-## HyperFrames
-
-Purpose: deterministic HTML/CSS/animation rendering to MP4 for sermon intros, countdowns, kinetic scripture clips and event promos.
-
-Current CLI installation: `npm install -g hyperframes`. HyperFrames requires Node.js 22+ and FFmpeg. VerseFlow's optional-tools BAT can install the npm package into its portable runtime. FFmpeg remains a separate prerequisite.
-
-Recommended adapter: create a `studio/hyperframes-projects` workspace, copy approved theme/text data into a composition, render to MP4, then import the completed MP4 into VerseFlow Media as **Review** before use.
 
 ## OmniRoute
 

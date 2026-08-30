@@ -5,7 +5,7 @@ import path from 'node:path'
 describe('FreeLivePage JSX wiring', () => {
   it('passes songs, media and requested live tab props in one valid component tag', () => {
     const app = fs.readFileSync(path.resolve(process.cwd(), 'src/App.tsx'), 'utf8')
-    expect(app).toContain('onPickMedia={importMedia} songs={data.songs} onSaveSong={saveSong} requestedTab={liveTab}/>')
+    expect(app).toContain('onPickMedia={importMedia} songs={data.songs} onSaveSong={saveSong} requestedTab={liveTab} onMediaAdded={reload}/>')
     expect(app).not.toContain('onPickMedia={importMedia}/ songs={data.songs}')
   })
 })

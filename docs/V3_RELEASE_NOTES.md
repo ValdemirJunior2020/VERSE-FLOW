@@ -17,7 +17,6 @@
 - FFmpeg/ffprobe diagnostics and compatible MP4 creation.
 - whisper.cpp offline captions and safe preview-only Auto Scripture Follow.
 - OBS Studio / obs-websocket scene, recording and stream control, plus Open OBS.
-- HyperFrames Motion Studio and render-to-Media workflow.
 - Bitfocus Companion localhost-only HTTP action API for Stream Deck/hardware workflows.
 - Ollama qwen3:0.6b Smart Presenter with deterministic fallback.
 - yt-dlp permitted web-media import with Deno runtime support.
@@ -33,5 +32,5 @@
 ## Validation in build workspace
 - `electron/main.cjs`, `electron/preload.cjs`, and `electron/production-tools.cjs` pass `node --check`.
 - TypeScript/TSX syntax scan reports no TS1xxx parser diagnostics.
-- Static regression checks verify the 18 bundled Bibles, multilingual flags/default, production IPC actions, HyperFrames composition metadata, Smart actions, local media protocol and yt-dlp/Deno installer wiring.
+- Static regression checks verify the 18 bundled Bibles, multilingual flags/default, production IPC actions, Smart actions, local media protocol and yt-dlp/Deno installer wiring.
 - The full npm/Vitest/Vite/Electron Windows build must still be run on the target Windows PC because this build workspace does not contain the project's npm dependencies.

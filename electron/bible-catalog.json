@@ -4,18 +4,28 @@
     "name": "American King James Version",
     "language": "English",
     "status": "download",
-    "license": "Public Domain",
-    "source": "GetBible v2 JSON",
-    "url": "https://api.getbible.net/v2/akjv.json"
+    "license": "User-provided offline copy; distribution rights remain with the source/rightsholder",
+    "source": "User-provided offline copy · bundled with VerseFlow",
+    "url": "https://api.getbible.net/v2/akjv.json",
+    "bundledFile": "akjv_user.json"
+  },
+  {
+    "code": "AMP",
+    "name": "Amplified Bible",
+    "language": "English",
+    "status": "download",
+    "license": "User-provided local copy; copyright remains with the respective publisher/rightsholder",
+    "source": "User-provided offline copy · bundled with VerseFlow",
+    "bundledFile": "amp_user.json"
   },
   {
     "code": "ASV",
     "name": "American Standard Version",
     "language": "English",
     "status": "download",
-    "license": "This Bible is in the Public Domain.",
-    "source": "Bible SuperSearch export · bundled offline",
-    "bundledFile": "asv.json"
+    "license": "Public Domain · User-provided offline copy",
+    "source": "User-provided offline copy · bundled with VerseFlow",
+    "bundledFile": "asv_user.json"
   },
   {
     "code": "ASV-STRONGS",
@@ -143,9 +153,10 @@
     "code": "NKJV",
     "name": "New King James Version",
     "language": "English",
-    "status": "import",
-    "license": "Local import only",
-    "source": "User-provided local copy"
+    "status": "download",
+    "license": "User-provided local copy; copyright remains with the respective publisher/rightsholder",
+    "source": "User-provided offline copy · bundled with VerseFlow",
+    "bundledFile": "nkjv_user.json"
   },
   {
     "code": "OEB",
@@ -311,5 +322,14 @@
     "license": "This Bible is in the Public Domain.",
     "source": "Bible SuperSearch export · bundled offline",
     "bundledFile": "he_modern.json"
+  },
+  {
+    "code": "BRG-PARTIAL",
+    "name": "BRG (Partial: Genesis–Numbers)",
+    "language": "English",
+    "status": "download",
+    "license": "User-provided partial local copy; only Genesis, Exodus, Leviticus, and Numbers were supplied.",
+    "source": "User-provided offline partial copy · bundled with VerseFlow",
+    "partialBundledFile": "brg_partial_user.json"
   }
 ]

@@ -1,0 +1,5 @@
+VERSEFLOW V22 - HYPERFRAMES REMOVED
+
+HyperFrames is no longer required, checked, installed, exposed through Electron IPC, or shown in Production Control.
+The one-file installer remains INSTALL_VERSEFLOW.bat and now checks 11 tool groups instead of 12.
+Existing HyperFrames installations on the computer are left alone; VerseFlow does not uninstall third-party software.

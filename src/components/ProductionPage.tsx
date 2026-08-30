@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Activity, Captions, Clapperboard, Copy, Cpu, Film, MonitorUp, Radio, RefreshCw, Video, WandSparkles } from 'lucide-react'
+import { Activity, Captions, Clapperboard, Copy, Cpu, Film, MonitorUp, Radio, RefreshCw } from 'lucide-react'
 import type { DisplayInfo, MediaItem, ToolStatus } from '../types'
 
 export default function ProductionPage({
@@ -30,7 +30,7 @@ export default function ProductionPage({
   const localMedia=useMemo(()=>media.filter(m=>m.path),[media])
   const refresh=async()=>setTools(await window.verseflow?.toolStatus()||null)
 
-  useEffect(()=>{refresh()},[])
+  useEffect(()=>{void refresh()},[])
   useEffect(()=>window.verseflow?.onWhisperCaption(text=>{
     setCaption(text)
     if(autoFollow) onAutoScripture(text)
@@ -46,15 +46,21 @@ export default function ProductionPage({
   const connectObs=async()=>{
     const r=await window.verseflow?.obsConnect(obsHost,obsPort,obsPassword)
     if(r?.ok){
-      setObsConnected(true);setScenes(r.scenes||[]);setScene(r.currentScene||r.scenes?.[0]||'');setMessage('OBS connected')
-    }else{setObsConnected(false);setMessage(r?.error||'OBS connection failed')}
+      setObsConnected(true)
+      setScenes(r.scenes||[])
+      setScene(r.currentScene||r.scenes?.[0]||'')
+      setMessage('OBS connected')
+    }else{
+      setObsConnected(false)
+      setMessage(r?.error||'OBS connection failed')
+    }
   }
 
   return <div className="page production-page">
     <div className="page-heading">
       <div><span className="eyebrow">OPEN SOURCE CONTROL CENTER</span><h1>Production Control</h1></div>
       <div className="inline">
-        <button onClick={refresh}><RefreshCw size={15}/> Refresh Status</button>
+        <button onClick={()=>void refresh()}><RefreshCw size={15}/> Refresh Status</button>
         <button className="gold" onClick={()=>window.verseflow?.openOptionalToolsInstaller()}>Install / Update Open Source Tools</button>
       </div>
     </div>
@@ -63,7 +69,7 @@ export default function ProductionPage({
       {[
         ['mpv',tools?.mpvInstalled],['FFmpeg',tools?.ffmpegInstalled],['Whisper',tools?.whisperInstalled&&tools?.whisperModelInstalled],
         ['OBS',tools?.obsInstalled],['Ollama',tools?.ollamaInstalled],['yt-dlp',tools?.ytDlpInstalled],
-        ['HyperFrames',tools?.hyperframesInstalled],['Companion',tools?.companionInstalled],['Deno',tools?.denoInstalled]
+        ['Companion',tools?.companionInstalled],['Deno',tools?.denoInstalled]
       ].map(([name,ok])=><div key={String(name)} className={ok?'ok':'off'}><i/>{name}<span>{ok?'Ready':'Optional'}</span></div>)}
     </div>
 
@@ -73,11 +79,11 @@ export default function ProductionPage({
         <label>Media<select value={selectedPath} onChange={e=>setSelectedPath(e.target.value)}><option value="">Choose local media…</option>{localMedia.map(m=><option key={m.id} value={m.path}>{m.name}</option>)}</select></label>
         <label>Display<select value={screenIndex} onChange={e=>setScreenIndex(+e.target.value)}>{displays.map(d=><option key={d.id} value={d.index}>{d.label}</option>)}</select></label>
         <div className="prod-actions">
-          <button className="gold" onClick={()=>result(window.verseflow?.mpvLaunch(pickDefault(),screenIndex),'mpv opened fullscreen')}>Launch Fullscreen</button>
-          <button onClick={()=>result(window.verseflow?.mpvCommand('pause'),'mpv pause/resume sent')}>Pause / Resume</button>
-          <button onClick={()=>result(window.verseflow?.mpvCommand('seekBack'),'-10 seconds')}>-10s</button>
-          <button onClick={()=>result(window.verseflow?.mpvCommand('seekForward'),'+10 seconds')}>+10s</button>
-          <button onClick={()=>result(window.verseflow?.mpvCommand('stop'),'mpv stopped')}>Stop</button>
+          <button className="gold" onClick={()=>void result(window.verseflow?.mpvLaunch(pickDefault(),screenIndex),'mpv opened fullscreen')}>Launch Fullscreen</button>
+          <button onClick={()=>void result(window.verseflow?.mpvCommand('pause'),'mpv pause/resume sent')}>Pause / Resume</button>
+          <button onClick={()=>void result(window.verseflow?.mpvCommand('seekBack'),'-10 seconds')}>-10s</button>
+          <button onClick={()=>void result(window.verseflow?.mpvCommand('seekForward'),'+10 seconds')}>+10s</button>
+          <button onClick={()=>void result(window.verseflow?.mpvCommand('stop'),'mpv stopped')}>Stop</button>
         </div>
       </section>
 
@@ -108,22 +114,14 @@ export default function ProductionPage({
       <section className="production-card">
         <div className="prod-title"><Radio/><div><h3>OBS Studio Control</h3><p>Uses the WebSocket server built into modern OBS Studio.</p></div></div>
         <div className="obs-connect-row"><input value={obsHost} onChange={e=>setObsHost(e.target.value)} placeholder="127.0.0.1"/><input type="number" value={obsPort} onChange={e=>setObsPort(+e.target.value)}/><input type="password" value={obsPassword} onChange={e=>setObsPassword(e.target.value)} placeholder="OBS WebSocket password"/></div>
-        <div className="prod-actions"><button onClick={()=>result(window.verseflow?.obsOpen(),'OBS opened')}>Open OBS</button><button className="gold" onClick={connectObs}>Connect OBS</button></div>
+        <div className="prod-actions"><button onClick={()=>void result(window.verseflow?.obsOpen(),'OBS opened')}>Open OBS</button><button className="gold" onClick={()=>void connectObs()}>Connect OBS</button></div>
         <label>Scene<select value={scene} onChange={e=>setScene(e.target.value)}>{scenes.map(s=><option key={s}>{s}</option>)}</select></label>
         <div className="prod-actions">
-          <button disabled={!obsConnected||!scene} onClick={()=>result(window.verseflow?.obsSetScene(scene),'OBS scene changed')}>Set Scene</button>
-          <button disabled={!obsConnected} onClick={()=>result(window.verseflow?.obsControl('startRecord'),'OBS recording started')}>Start Recording</button>
-          <button disabled={!obsConnected} onClick={()=>result(window.verseflow?.obsControl('stopRecord'),'OBS recording stopped')}>Stop Recording</button>
-          <button disabled={!obsConnected} onClick={()=>result(window.verseflow?.obsControl('startStream'),'OBS stream started')}>Start Stream</button>
-          <button disabled={!obsConnected} onClick={()=>result(window.verseflow?.obsControl('stopStream'),'OBS stream stopped')}>Stop Stream</button>
-        </div>
-      </section>
-
-      <section className="production-card">
-        <div className="prod-title"><WandSparkles/><div><h3>Motion Studio</h3><p>HyperFrames + FFmpeg for cinematic countdowns, intros and announcement videos.</p></div></div>
-        <div className="prod-actions">
-          <button className="gold" onClick={async()=>{const r=await window.verseflow?.hyperframesStudio();setMessage(r?.ok?'Motion Studio opened':r?.error||'Could not open Motion Studio')}}>Open Motion Studio</button>
-          <button onClick={async()=>{const r=await window.verseflow?.hyperframesRender();if(r?.ok&&r.path){const name=r.path.split(/[\\/]/).pop()||'VerseFlow Motion.mp4';await onCompatibleAdded({id:`motion-${Date.now()}`,name,path:r.path,type:'video'});setMessage(`Rendered and added to Media: ${name}`)}else setMessage(r?.error||'Render failed')}}>Render Motion</button>
+          <button disabled={!obsConnected||!scene} onClick={()=>void result(window.verseflow?.obsSetScene(scene),'OBS scene changed')}>Set Scene</button>
+          <button disabled={!obsConnected} onClick={()=>void result(window.verseflow?.obsControl('startRecord'),'OBS recording started')}>Start Recording</button>
+          <button disabled={!obsConnected} onClick={()=>void result(window.verseflow?.obsControl('stopRecord'),'OBS recording stopped')}>Stop Recording</button>
+          <button disabled={!obsConnected} onClick={()=>void result(window.verseflow?.obsControl('startStream'),'OBS stream started')}>Start Stream</button>
+          <button disabled={!obsConnected} onClick={()=>void result(window.verseflow?.obsControl('stopStream'),'OBS stream stopped')}>Stop Stream</button>
         </div>
       </section>
 

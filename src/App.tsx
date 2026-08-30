@@ -5,11 +5,13 @@ import CanvasPreview from './components/CanvasPreview'
 import OutputRenderer from './components/OutputRenderer'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import ProductionPage from './components/ProductionPage'
+import LyricsPage from './components/LyricsPage'
 import { installDomTranslation, type Language } from './i18n'
 import { cleanStrongMarkers, defaultTheme, itemToPresentation, verseToServiceItem } from './presentation'
 import { useVerseFlowData } from './hooks/useVerseFlowData'
 import { builtInBackgrounds } from './backgrounds'
-import type { BibleCatalogItem, BibleTranslation, DisplayInfo, DisplayStatus, MediaItem, ModuleKey, PresentationState, ServiceItem, SmartPlan, Song, Theme, ToolStatus, Verse, SystemCheckResult } from './types'
+import { localSongMatches, lyricSlides } from './lyrics'
+import type { BibleCatalogItem, BibleTranslation, DisplayInfo, DisplayStatus, MediaItem, ModuleKey, PresentationState, ServiceItem, SmartPlan, Song, Theme, ToolStatus, Verse, SystemCheckResult, InternetToolsStatus } from './types'
 
 const params = new URLSearchParams(location.search)
 const mode = params.get('mode')
@@ -232,7 +234,8 @@ function SettingsPage({displays,settings,translations,refresh,openOut,closeOut,o
   const [health,setHealth]=useState('')
   const [tools,setTools]=useState<ToolStatus|null>(null)
   const [diagnostics,setDiagnostics]=useState<SystemCheckResult|null>(null)
-  const refreshTools=async()=>setTools(await window.verseflow?.toolStatus()||null)
+  const [internetTools,setInternetTools]=useState<InternetToolsStatus|null>(null)
+  const refreshTools=async()=>{setTools(await window.verseflow?.toolStatus()||null);setInternetTools(await window.verseflow?.internetToolsStatus()||null)}
   const runDiagnostics=async()=>setDiagnostics(await window.verseflow?.systemCheck()||null)
   const [dataPath,setDataPath]=useState('')
   const [identifyBusy,setIdentifyBusy]=useState(false)
@@ -242,11 +245,11 @@ function SettingsPage({displays,settings,translations,refresh,openOut,closeOut,o
   useEffect(()=>{if(displays.length){if(!displays.some(d=>d.id===aud))setAud(displays.find(d=>!d.primary)?.id??displays[0].id);if(!displays.some(d=>d.id===stage))setStage(displays.find(d=>d.id!==aud&&!d.primary)?.id??displays[0].id)}},[displays])
   const identify=async()=>{setIdentifyBusy(true);const r=await window.verseflow?.identifyDisplays();setIdentifyBusy(false);if(r?.ok)refresh()}
   const saveBasics=()=>{onSaveSetting('defaultTranslation',translation);onSaveSetting('resolution',resolution);onSaveSetting('fps',fps);onSaveSetting('mediaFolders',mediaFolders);onSaveSetting('aiEndpoint',omni)}
-  return <div className="page settings-page"><div className="page-heading"><div><span className="eyebrow">SYSTEM</span><h1>Settings</h1></div><div className="inline"><button onClick={refresh}>Refresh displays</button><button className="gold" onClick={saveBasics}>Save Settings</button></div></div><section><h3>Presentation defaults</h3><div className="settings-grid"><label>Default translation<select value={translation} onChange={e=>setTranslation(e.target.value)}>{translations.map(t=><option value={t.code} key={t.code}>{t.code} · {t.name}</option>)}</select></label><label>Output resolution<select value={resolution} onChange={e=>setResolution(e.target.value)}><option>1920x1080</option><option>1280x720</option><option>3840x2160</option></select></label><label>FPS preference<select value={fps} onChange={e=>setFps(e.target.value)}><option>30</option><option>60</option></select></label><label>Media folders<input value={mediaFolders} onChange={e=>setMediaFolders(e.target.value)} placeholder="D:\Church Media; C:\Media"/></label></div></section><section className="display-setup-section"><div className="section-row"><div><h3>Telão</h3><p>Escolha uma vez qual tela é o telão. O VerseFlow lembra dela e não troca para o monitor do operador sozinho.</p></div><button className="gold" onClick={identify} disabled={identifyBusy}>{identifyBusy?'IDENTIFICANDO…':'IDENTIFICAR TELAS'}</button></div><div className={`wall-status ${displayStatus?.connected?'connected':'disconnected'}`}>{displayStatus?.connected?<CheckCircle2 size={18}/>:<AlertTriangle size={18}/>}<div><strong>{displayStatus?.connected?'TELÃO CONECTADO':'TELÃO NÃO DETECTADO'}</strong><span>{displayStatus?.connected?`Tela ${displayStatus.selected!.index+1} · ${displayStatus.selected!.bounds.width}×${displayStatus.selected!.bounds.height}`:'Conecte o telão e clique em Identificar Telas.'}</span></div></div><div className="settings-grid"><label>TELÃO (Audience)<select value={aud} onChange={e=>{const id=+e.target.value;setAud(id);onSaveSetting('audienceDisplayId',id)}}>{displays.map(d=><option key={d.id} value={d.id}>Tela {d.index+1} · {d.label} · {d.bounds.width}×{d.bounds.height}{d.primary?' · MONITOR DO OPERADOR':''}</option>)}</select><div className="inline"><button className="gold" onClick={()=>openOut('audience',aud)}>TESTAR TELÃO</button><button onClick={()=>closeOut('audience')}>Fechar teste</button></div></label><label>Stage display<select value={stage} onChange={e=>{const id=+e.target.value;setStage(id);onSaveSetting('stageDisplayId',id)}}>{displays.map(d=><option key={d.id} value={d.id}>Tela {d.index+1} · {d.label} · {d.bounds.width}×{d.bounds.height}</option>)}</select><div className="inline"><button onClick={()=>openOut('stage',stage)}>Open Stage</button><button onClick={()=>closeOut('stage')}>Close</button></div></label></div></section><section><h3>Data & backup</h3><p>Database location: <code>{dataPath||'Loading…'}</code></p><div className="inline"><button onClick={onBackup}>Export Backup</button><button onClick={onRestore}>Restore Backup</button></div></section><section className="system-check-section"><div className="section-row"><div><h3>System Check</h3><p>One-click check for the things that can stop a Sunday presentation.</p></div><button className="gold" onClick={runDiagnostics}>Run System Check</button></div>{diagnostics&&<><div className={`system-check-summary ${diagnostics.ok?'ok':'warn'}`}>{diagnostics.ok?<CheckCircle2 size={18}/>:<AlertTriangle size={18}/>}<strong>{diagnostics.summary}</strong></div><div className="system-check-list">{diagnostics.checks.map(c=><div key={c.id} className={c.ok?'ok':c.optional?'optional':'fail'}>{c.ok?<CheckCircle2 size={15}/>:<AlertTriangle size={15}/>}<div><strong>{c.label}</strong><span>{c.detail}</span></div></div>)}</div><small>Error report: {diagnostics.logPath}</small></>}</section><section><h3>Hotkeys</h3><p><kbd>Space</kbd> / <kbd>→</kbd> next · <kbd>←</kbd> previous · <kbd>B</kbd> black · <kbd>C</kbd> clear text · <kbd>Esc</kbd> emergency black. Custom remapping is reserved for the next settings pass.</p></section><section><h3>Smart Presenter Tools</h3><p>Optional and local. VerseFlow uses Ollama + qwen3:0.6b for natural-language presentation planning and yt-dlp for permitted web-media imports. Scripture text is always retrieved exactly from your installed Bible database; AI never rewrites it.</p><div className="tool-status-grid"><div><strong>Ollama</strong><span>{tools?.ollamaRunning?'Running':tools?.ollamaInstalled?'Installed / not running':'Not installed'}</span><small>{tools?.modelInstalled?`${tools.model} ready`:`${tools?.model||'qwen3:0.6b'} not downloaded`}</small></div><div><strong>yt-dlp</strong><span>{tools?.ytDlpInstalled?'Ready':'Not installed'}</span><small>{tools?.ytDlpVersion||'Optional web-media importer'}</small></div></div><div className="inline"><button onClick={refreshTools}>Refresh Status</button><button className="gold" onClick={async()=>{const r=await window.verseflow?.openOptionalToolsInstaller();setHealth(r?.ok?'Installer opened':r?.error||'Could not open installer')}}>Install / Update Tools</button><span className="health">{health}</span></div><details><summary>Advanced compatible AI endpoint</summary><label>OmniRoute / compatible URL<input value={omni} onChange={e=>setOmni(e.target.value)}/></label><button onClick={async()=>{setHealth('Checking…');const r=await window.verseflow?.integrationHealth(omni);setHealth(r?.ok?'Connected':r?.error||'Not available')}}>Test endpoint</button></details></section></div>
+  return <div className="page settings-page"><div className="page-heading"><div><span className="eyebrow">SYSTEM</span><h1>Settings</h1></div><div className="inline"><button onClick={refresh}>Refresh displays</button><button className="gold" onClick={saveBasics}>Save Settings</button></div></div><section><h3>Presentation defaults</h3><div className="settings-grid"><label>Default translation<select value={translation} onChange={e=>setTranslation(e.target.value)}>{translations.map(t=><option value={t.code} key={t.code}>{t.code} · {t.name}</option>)}</select></label><label>Output resolution<select value={resolution} onChange={e=>setResolution(e.target.value)}><option>1920x1080</option><option>1280x720</option><option>3840x2160</option></select></label><label>FPS preference<select value={fps} onChange={e=>setFps(e.target.value)}><option>30</option><option>60</option></select></label><label>Media folders<input value={mediaFolders} onChange={e=>setMediaFolders(e.target.value)} placeholder="D:\Church Media; C:\Media"/></label></div></section><section className="display-setup-section"><div className="section-row"><div><h3>Telão</h3><p>Escolha uma vez qual tela é o telão. O VerseFlow lembra dela e não troca para o monitor do operador sozinho.</p></div><button className="gold" onClick={identify} disabled={identifyBusy}>{identifyBusy?'IDENTIFICANDO…':'IDENTIFICAR TELAS'}</button></div><div className={`wall-status ${displayStatus?.connected?'connected':'disconnected'}`}>{displayStatus?.connected?<CheckCircle2 size={18}/>:<AlertTriangle size={18}/>}<div><strong>{displayStatus?.connected?'TELÃO CONECTADO':'TELÃO NÃO DETECTADO'}</strong><span>{displayStatus?.connected?`Tela ${displayStatus.selected!.index+1} · ${displayStatus.selected!.bounds.width}×${displayStatus.selected!.bounds.height}`:'Conecte o telão e clique em Identificar Telas.'}</span></div></div><div className="settings-grid"><label>TELÃO (Audience)<select value={aud} onChange={e=>{const id=+e.target.value;setAud(id);onSaveSetting('audienceDisplayId',id)}}>{displays.map(d=><option key={d.id} value={d.id}>Tela {d.index+1} · {d.label} · {d.bounds.width}×{d.bounds.height}{d.primary?' · MONITOR DO OPERADOR':''}</option>)}</select><div className="inline"><button className="gold" onClick={()=>openOut('audience',aud)}>TESTAR TELÃO</button><button onClick={()=>closeOut('audience')}>Fechar teste</button></div></label><label>Stage display<select value={stage} onChange={e=>{const id=+e.target.value;setStage(id);onSaveSetting('stageDisplayId',id)}}>{displays.map(d=><option key={d.id} value={d.id}>Tela {d.index+1} · {d.label} · {d.bounds.width}×{d.bounds.height}</option>)}</select><div className="inline"><button onClick={()=>openOut('stage',stage)}>Open Stage</button><button onClick={()=>closeOut('stage')}>Close</button></div></label></div></section><section><h3>Data & backup</h3><p>Database location: <code>{dataPath||'Loading…'}</code></p><div className="inline"><button onClick={onBackup}>Export Backup</button><button onClick={onRestore}>Restore Backup</button></div></section><section className="system-check-section"><div className="section-row"><div><h3>System Check</h3><p>One-click check for the things that can stop a Sunday presentation.</p></div><button className="gold" onClick={runDiagnostics}>Run System Check</button></div>{diagnostics&&<><div className={`system-check-summary ${diagnostics.ok?'ok':'warn'}`}>{diagnostics.ok?<CheckCircle2 size={18}/>:<AlertTriangle size={18}/>}<strong>{diagnostics.summary}</strong></div><div className="system-check-list">{diagnostics.checks.map(c=><div key={c.id} className={c.ok?'ok':c.optional?'optional':'fail'}>{c.ok?<CheckCircle2 size={15}/>:<AlertTriangle size={15}/>}<div><strong>{c.label}</strong><span>{c.detail}</span></div></div>)}</div><small>Error report: {diagnostics.logPath}</small></>}</section><section><h3>Hotkeys</h3><p><kbd>Space</kbd> / <kbd>→</kbd> next · <kbd>←</kbd> previous · <kbd>B</kbd> black · <kbd>C</kbd> clear text · <kbd>Esc</kbd> emergency black. Custom remapping is reserved for the next settings pass.</p></section><section><div className="section-row"><div><h3>Internet Agent</h3><p>Local Ollama stays the brain. Agent-Reach provides web search, Crawl4AI extracts clean page data, and Browser Use is an optional fallback only.</p></div><button onClick={refreshTools}>Refresh Status</button></div><div className="tool-status-grid internet-tool-grid">{[['Ollama',tools?.ollamaRunning?'Ready':tools?.ollamaInstalled?'Stopped':'Not installed'],['Agent-Reach',internetTools?.agentReach.running?'Ready':internetTools?.agentReach.installed?'Stopped':'Not installed'],['Crawl4AI',internetTools?.crawl4ai.installed?'Ready':'Not installed'],['Browser Use',internetTools?.browserUse.installed?'Ready':'Not installed']].map(([name,status])=><div key={String(name)}><strong>{name}</strong><span>{status}</span></div>)}</div><div className="inline"><button className="gold" onClick={async()=>{const r=await window.verseflow?.installInternetAgentTools();setHealth(r?.ok?'Internet Agent installer opened':r?.error||'Could not open installer')}}>INSTALL INTERNET AGENT TOOLS</button><span className="health">{health}</span></div><small>Allowed web tools: search_web · fetch_page · extract_page · open_browser_if_needed. Web content is treated as untrusted data and cannot run commands or access VerseFlow files.</small></section><section><h3>Smart Presenter Tools</h3><p>Optional and local. VerseFlow uses Ollama + qwen3:0.6b for natural-language presentation planning and yt-dlp for permitted web-media imports. Scripture text is always retrieved exactly from your installed Bible database; AI never rewrites it.</p><div className="tool-status-grid"><div><strong>Ollama</strong><span>{tools?.ollamaRunning?'Running':tools?.ollamaInstalled?'Installed / not running':'Not installed'}</span><small>{tools?.modelInstalled?`${tools.model} ready`:`${tools?.model||'qwen3:0.6b'} not downloaded`}</small></div><div><strong>yt-dlp</strong><span>{tools?.ytDlpInstalled?'Ready':'Not installed'}</span><small>{tools?.ytDlpVersion||'Optional web-media importer'}</small></div></div><div className="inline"><button onClick={refreshTools}>Refresh Status</button><button className="gold" onClick={async()=>{const r=await window.verseflow?.openOptionalToolsInstaller();setHealth(r?.ok?'Installer opened':r?.error||'Could not open installer')}}>Install / Update Tools</button><span className="health">{health}</span></div><details><summary>Advanced compatible AI endpoint</summary><label>OmniRoute / compatible URL<input value={omni} onChange={e=>setOmni(e.target.value)}/></label><button onClick={async()=>{setHealth('Checking…');const r=await window.verseflow?.integrationHealth(omni);setHealth(r?.ok?'Connected':r?.error||'Not available')}}>Test endpoint</button></details></section></div>
 }
 
 function FreeLivePage({
-  state,setState,onSendLive,verses,translations,media,onPickMedia,songs,onSaveSong,requestedTab
+  state,setState,onSendLive,verses,translations,media,onPickMedia,onMediaAdded,songs,onSaveSong,requestedTab
 }:{
   state:PresentationState;
   setState:(s:PresentationState)=>void;
@@ -255,6 +258,7 @@ function FreeLivePage({
   translations:BibleTranslation[];
   media:MediaItem[];
   onPickMedia:()=>void;
+  onMediaAdded:()=>Promise<void>;
   songs:Song[];
   onSaveSong:(s:Song)=>Promise<void>;
   requestedTab?:string;
@@ -275,11 +279,15 @@ function FreeLivePage({
   const [newSongBody,setNewSongBody]=useState('Verse 1\n\nChorus\n')
   const [webUrl,setWebUrl]=useState('')
   const [webBusy,setWebBusy]=useState(false)
+  const [youtubeDownloadBusy,setYoutubeDownloadBusy]=useState(false)
+  const [youtubeDownloadNote,setYoutubeDownloadNote]=useState('')
   const [smartInput,setSmartInput]=useState('Show John 3:16')
   const [smartBusy,setSmartBusy]=useState(false)
   const [smartEngine,setSmartEngine]=useState('')
   const [smartPlan,setSmartPlan]=useState<SmartPlan|null>(null)
   const [smartNote,setSmartNote]=useState('')
+  const [smartVerse,setSmartVerse]=useState<Verse|null>(null)
+  const [smartSuggestions,setSmartSuggestions]=useState<string[]>([])
 
   const [found,setFound]=useState<Verse[]>([])
   const [bibleSearchBusy,setBibleSearchBusy]=useState(false)
@@ -304,6 +312,18 @@ function FreeLivePage({
 
   const live=(n:PresentationState)=>{setState(n);onSendLive(n)}
 
+  const withVideoDefaults=(base:PresentationState, extra:Partial<NonNullable<PresentationState['video']>>={})=>({
+    ...base,
+    video:{...(base.video||{playing:true,muted:false,volume:0.85,loop:true}),playing:true,muted:false,volume:0.85,loop:true,...extra,commandId:Date.now(),seekDelta:extra.seekDelta||0}
+  })
+
+  const updateVideoControl=(patch:Partial<NonNullable<PresentationState['video']>>)=>{
+    setState({
+      ...state,
+      video:{...(state.video||{playing:true,muted:false,volume:0.85,loop:true}),...patch,commandId:Date.now(),seekDelta:patch.seekDelta||0}
+    })
+  }
+
   const previewText=()=>{
     setState({...state,mode:'preview',text:custom,reference,title:reference||'Custom Text',layout:'center',backgroundType:state.backgroundType||'solid',black:false,logo:false,clearText:false,sequence:state.sequence+1})
   }
@@ -322,18 +342,18 @@ function FreeLivePage({
 
   const mediaPreview=(m:MediaItem)=>{
     if(m.type==='audio'){setState({...state,mode:'preview',title:m.name,audio:{path:m.path,playing:false,volume:.85,loop:false},sequence:state.sequence+1});return}
-    setState({...state,mode:'preview',title:m.name,text:'',reference:'',layout:'center',background:m.path,backgroundType:m.type==='video'?'video':'image',black:false,logo:false,clearText:false,sequence:state.sequence+1})
+    setState(withVideoDefaults({...state,mode:'preview',title:m.name,text:'',reference:'',layout:'center',background:m.path,backgroundType:m.type==='video'?'video':'image',black:false,logo:false,clearText:false,sequence:state.sequence+1}, m.type==='video'?{muted:false,playing:true,volume:0.85,loop:false}:{muted:false,playing:true,volume:0.85,loop:true}))
   }
 
   const mediaLive=(m:MediaItem)=>{
     if(m.type==='audio'){live({...state,mode:'live',title:m.name,audio:{path:m.path,playing:true,volume:.85,loop:false},sequence:state.sequence+1});return}
-    live({...state,mode:'live',title:m.name,text:'',reference:'',layout:'center',youtubeId:undefined,audio:m.type==='video'?undefined:state.audio,background:m.path,backgroundType:m.type==='video'?'video':'image',black:false,logo:false,clearText:false,sequence:state.sequence+1})
+    live(withVideoDefaults({...state,mode:'live',title:m.name,text:'',reference:'',layout:'center',youtubeId:undefined,audio:m.type==='video'?undefined:state.audio,background:m.path,backgroundType:m.type==='video'?'video':'image',black:false,logo:false,clearText:false,sequence:state.sequence+1}, m.type==='video'?{muted:false,playing:true,volume:0.85,loop:false}:{muted:false,playing:true,volume:0.85,loop:true}))
   }
 
   const mediaAsBackground=(m:MediaItem)=>{
     if(m.type==='audio')return
     const darkDefault=['#2f3133','#111111','#000000'].includes(String(state.theme.textColor).toLowerCase())
-    setState({...state,background:m.path,backgroundType:m.type==='video'?'video':'image',youtubeId:undefined,black:false,logo:false,theme:{...state.theme,overlay:Math.max(.46,state.theme.overlay||0),textColor:darkDefault?'#fffaf0':state.theme.textColor},sequence:state.sequence+1})
+    setState(withVideoDefaults({...state,background:m.path,backgroundType:m.type==='video'?'video':'image',youtubeId:undefined,black:false,logo:false,theme:{...state.theme,overlay:Math.max(.46,state.theme.overlay||0),textColor:darkDefault?'#fffaf0':state.theme.textColor},sequence:state.sequence+1}, m.type==='video'?{muted:false,playing:true,volume:0.85,loop:false}:{muted:false,playing:true,volume:0.85,loop:true}))
   }
   const mediaAsMusic=(m:MediaItem)=>{
     if(m.type!=='audio')return
@@ -394,7 +414,9 @@ function FreeLivePage({
   const startTimer=(goLive:boolean)=>{
     const end=Date.now()+Math.max(1,timerMinutes)*60*1000
     const n={...state,mode:goLive?'live' as const:'preview' as const,title:'Timer',text:'',reference:'',layout:'countdown' as const,timerEndAt:end,timerLabel,youtubeId:undefined,black:false,logo:false,clearText:false,sequence:state.sequence+1}
-    if(goLive)live(n);else setState(n)
+    // Preview is intentionally local-only. START TIMER sends the countdown
+    // through the normal LIVE path, which opens/validates the audience output.
+    if(goLive)void onSendLive(n);else setState(n)
   }
 
   const parseYoutube=(value:string)=>{
@@ -425,13 +447,53 @@ function FreeLivePage({
     else setSmartNote(r?.error||'Web-media download failed.')
   }
 
+  const downloadYoutube=async()=>{
+    if(!youtubeUrl.trim())return
+    setYoutubeDownloadBusy(true)
+    setYoutubeDownloadNote('Downloading with yt-dlp + Deno + FFmpeg… Please keep VerseFlow open.')
+    try{
+      const r=await window.verseflow?.downloadMediaUrl(youtubeUrl.trim())
+      if(r?.ok&&r.item){
+        const saved=await window.verseflow?.upsert('media',r.item)
+        if(saved?.ok===false)throw new Error(saved.error||'The file downloaded but could not be added to Media.')
+        await onMediaAdded()
+        setYoutubeDownloadNote(`DONE · ${r.item.name} is now in the Media library.`)
+      }else setYoutubeDownloadNote(r?.error||'YouTube download failed.')
+    }catch(error){
+      setYoutubeDownloadNote(error instanceof Error?error.message:'YouTube download failed.')
+    }finally{
+      setYoutubeDownloadBusy(false)
+    }
+  }
+
   const planSmart=async()=>{
-    setSmartBusy(true);setSmartNote('Planning safely…')
+    setSmartBusy(true);setSmartNote('Planning safely…');setSmartVerse(null);setSmartSuggestions([])
     const context={translations:translations.map(t=>t.code),songs:songs.slice(0,80).map(s=>s.title),media:media.slice(0,80).map(m=>m.name),current:{title:state.title,reference:state.reference}}
     const r=await window.verseflow?.smartCommand(smartInput,context)
+    if(r?.ok&&r.plan){
+      setSmartPlan(r.plan);setSmartEngine(r.engine||'local')
+      if(r.plan.action==='SHOW_VERSE'&&r.plan.reference){
+        const suggestions=await window.verseflow?.suggestBibleReferences(r.plan.reference,r.plan.translation,3)||[]
+        if(suggestions.length>1){
+          setSmartSuggestions(suggestions)
+          setSmartNote(`That reference is ambiguous. Did you mean ${suggestions.join(' or ')}? Choose one below.`)
+        }else{
+          const verse=await resolveVerse(r.plan.reference,r.plan.translation)
+          if(verse){
+            const canonical=`${verse.book} ${verse.chapter}:${verse.verse}`
+            const exactText=verse.translation.includes('STRONGS')?cleanStrongMarkers(verse.text):verse.text
+            setSmartPlan({...r.plan,reference:canonical,message:`${canonical} · ${verse.translation}`})
+            setSmartVerse(verse)
+            setSmartNote(r.error?`Corrected safely. ${r.error}`:`Ready · ${canonical}`)
+            setState({...state,mode:'preview',title:canonical,text:exactText,reference:canonical,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false,sequence:state.sequence+1})
+          }else{
+            setSmartSuggestions(suggestions)
+            setSmartNote(suggestions.length?`I couldn't find ${r.plan.reference}. Did you mean ${suggestions.join(' or ')}?`:`I couldn't find ${r.plan.reference}. Please check the book, chapter, and verse.`)
+          }
+        }
+      }else setSmartNote(r.error?`Fallback used: ${r.error}`:(r.plan.message||'Plan ready.'))
+    } else {setSmartPlan(null);setSmartNote(r?.error||'Smart Presenter is not available.')}
     setSmartBusy(false)
-    if(r?.ok&&r.plan){setSmartPlan(r.plan);setSmartEngine(r.engine||'local');setSmartNote(r.error?`Fallback used: ${r.error}`:(r.plan.message||'Plan ready.'))}
-    else {setSmartPlan(null);setSmartNote(r?.error||'Smart Presenter is not available.')}
   }
 
   const resolveVerse=async(reference:string,translation?:string)=>{
@@ -447,10 +509,12 @@ function FreeLivePage({
   const applySmart=async(goLive:boolean)=>{
     const p=smartPlan;if(!p)return
     const finish=(n:PresentationState)=>goLive?live({...n,mode:'live',sequence:n.sequence+1}):setState({...n,mode:'preview',sequence:n.sequence+1})
-    if(p.action==='SHOW_VERSE'&&p.reference){const v=await resolveVerse(p.reference,p.translation);if(!v){setSmartNote(`Verse not found locally: ${p.reference}`);return}const text=v.translation.includes('STRONGS')?cleanStrongMarkers(v.text):v.text;finish({...state,title:`${v.book} ${v.chapter}:${v.verse}`,text,reference:`${v.book} ${v.chapter}:${v.verse}`,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false});return}
+    if(p.action==='SHOW_VERSE'&&p.reference){const v=smartVerse||await resolveVerse(p.reference,p.translation);if(!v){const suggestions=await window.verseflow?.suggestBibleReferences(p.reference,p.translation,3)||[];setSmartSuggestions(suggestions);setSmartNote(suggestions.length?`Verse not found: ${p.reference}. Did you mean ${suggestions.join(' or ')}?`:`Verse not found: ${p.reference}. Please check the book, chapter, and verse.`);return}const text=v.translation.includes('STRONGS')?cleanStrongMarkers(v.text):v.text;finish({...state,title:`${v.book} ${v.chapter}:${v.verse}`,text,reference:`${v.book} ${v.chapter}:${v.verse}`,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false});return}
     if(p.action==='SHOW_TEXT'&&p.text){finish({...state,title:'Smart Text',text:p.text,reference:'',youtubeId:undefined,black:false,logo:false,clearText:false});return}
-    if(p.action==='FIND_SONG'){const song=songs.find(x=>x.title.toLowerCase().includes(String(p.query||'').toLowerCase()));const sec=song?.sections[0];if(!song||!sec){setSmartNote('Song not found in the local library.');return}finish({...state,title:song.title,text:sec.lines.join('\n'),reference:sec.label,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false});return}
-    if(p.action==='FIND_MEDIA'){const m=media.find(x=>x.name.toLowerCase().includes(String(p.query||'').toLowerCase()));if(!m){setSmartNote('Media not found in the local library.');return}finish({...state,title:m.name,text:'',reference:'',layout:'center',background:m.path,backgroundType:m.type==='video'?'video':'image',youtubeId:undefined,black:false,logo:false,clearText:false});return}
+    if(p.action==='FIND_SONG'){const matches=localSongMatches(songs,String(p.query||''));if(matches.length>1&&matches[0].score===matches[1].score){setSmartNote(`Multiple songs match: ${matches.slice(0,4).map(x=>x.song.title).join(', ')}. Please choose the correct song in LYRICS.`);return}const song=matches[0]?.song;const sec=song?.sections[0];if(!song||!sec){setSmartNote('Song not found locally. Open LYRICS to search the internet. VerseFlow will not silently guess or invent a modern song.');return}finish({...state,title:song.title,text:sec.lines.join('\n'),reference:sec.label,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false});return}
+    if(p.action==='SHOW_SONG_SECTION'){const current=songs.find(x=>x.title===state.title)||songs.find(x=>state.title.toLowerCase().includes(x.title.toLowerCase()));if(!current){setSmartNote('No current song is selected. Say “Show lyrics [song title]” first.');return}const wanted=String(p.query||'').toLowerCase().replace(/[- ]/g,'');const sec=current.sections.find(x=>x.label.toLowerCase().replace(/[- ]/g,'')===wanted)||current.sections.find(x=>x.label.toLowerCase().replace(/[- ]/g,'').includes(wanted));if(!sec){setSmartNote(`${p.query||'That section'} was not found in ${current.title}.`);return}finish({...state,title:current.title,text:sec.lines.slice(0,4).join('\n'),reference:sec.label,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false});return}
+    if(p.action==='NEXT_LYRICS'||p.action==='PREVIOUS_LYRICS'){const current=songs.find(x=>x.title===state.title)||songs.find(x=>state.title.toLowerCase().includes(x.title.toLowerCase()));if(!current){setSmartNote('No current lyrics song is selected.');return}const slides=lyricSlides(current);let at=slides.findIndex(x=>x.label===state.reference&&x.lines.join('\n')===state.text);if(at<0)at=0;at=Math.max(0,Math.min(slides.length-1,at+(p.action==='NEXT_LYRICS'?1:-1)));const sl=slides[at];finish({...state,title:current.title,text:sl.lines.join('\n'),reference:sl.label,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false});return}
+    if(p.action==='FIND_MEDIA'){const m=media.find(x=>x.name.toLowerCase().includes(String(p.query||'').toLowerCase()));if(!m){setSmartNote('Media not found in the local library.');return}finish(withVideoDefaults({...state,title:m.name,text:'',reference:'',layout:'center',background:m.path,backgroundType:m.type==='video'?'video':'image',youtubeId:undefined,black:false,logo:false,clearText:false}, m.type==='video'?{muted:false,playing:true,volume:0.85,loop:false}:{muted:false,playing:true,volume:0.85,loop:true}));return}
     if(p.action==='SET_TEXT_COLOR'&&p.color){setState({...state,theme:{...state.theme,textColor:p.color}});return}
     if(p.action==='SET_ACCENT_COLOR'&&p.color){setState({...state,theme:{...state.theme,accentColor:p.color}});return}
     if(p.action==='START_TIMER'){
@@ -554,9 +618,11 @@ function FreeLivePage({
         </label>
         <div className="youtube-actions">
           <button onClick={()=>parseYoutube(youtubeUrl)}>LOAD / PREVIEW</button>
+          <button className="gold" disabled={youtubeDownloadBusy||!youtubeUrl.trim()} onClick={downloadYoutube}>{youtubeDownloadBusy?'DOWNLOADING…':'DOWNLOAD TO MEDIA'}</button>
           <button className="youtube-present" disabled={!youtubeId} onClick={presentYoutube}><Youtube size={17}/> PRESENT YOUTUBE</button>
         </div>
-        <p>The audience output uses YouTube's official embedded player. YouTube controls any ads that appear.</p>
+        <p>Preview/present uses YouTube's embedded player. Download uses local yt-dlp + Deno + FFmpeg and saves the finished file into VerseFlow Media. Only download media you have permission to save.</p>
+        {youtubeDownloadNote&&<div className={`youtube-download-status ${youtubeDownloadNote.startsWith('DONE')?'done':''}`}>{youtubeDownloadNote}</div>}
         {youtubeId&&<div className="youtube-embed-small">
           <iframe
             src={`https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=0&rel=0&origin=${encodeURIComponent(window.location.origin)}&widget_referrer=${encodeURIComponent(window.location.href)}`}
@@ -588,7 +654,7 @@ function FreeLivePage({
           <textarea value={smartInput} onChange={e=>setSmartInput(e.target.value)} placeholder="Examples: Show John 3:16 · Make text pink · Show our welcome video · Black screen"/>
         </label>
         <button className="gold" disabled={smartBusy||!smartInput.trim()} onClick={planSmart}>{smartBusy?'Thinking locally…':'PLAN ACTION'}</button>
-        {smartPlan&&<div className="smart-plan-card"><span>{smartEngine}</span><strong>{smartPlan.action}</strong><p>{smartPlan.message||smartNote}</p>{smartPlan.reference&&<code>{smartPlan.reference}</code>}{smartPlan.query&&<code>{smartPlan.query}</code>}{smartPlan.color&&<div className="smart-color"><i style={{background:smartPlan.color}}/>{smartPlan.color}</div>}<div className="smart-plan-actions"><button onClick={()=>applySmart(false)}>PREVIEW ACTION</button><button className="gold" onClick={()=>applySmart(true)}>SEND LIVE</button></div></div>}
+        {smartPlan&&<div className="smart-plan-card"><span>{smartEngine}</span><strong>{smartPlan.action}</strong><p>{smartPlan.message||smartNote}</p>{smartPlan.reference&&<code>{smartPlan.reference}</code>}{smartVerse&&<div className="smart-verse-result"><strong>{smartVerse.book} {smartVerse.chapter}:{smartVerse.verse} · {smartVerse.translation}</strong><p>{smartVerse.translation.includes('STRONGS')?cleanStrongMarkers(smartVerse.text):smartVerse.text}</p></div>}{smartSuggestions.length>0&&<div className="smart-suggestions"><span>Did you mean:</span>{smartSuggestions.map(ref=><button key={ref} onClick={()=>{setSmartInput(`Show ${ref}`);setSmartPlan(null);setSmartVerse(null);setSmartSuggestions([]);setSmartNote(`Try ${ref}, then press PLAN ACTION.`)}}>{ref}</button>)}</div>}{smartPlan.query&&<code>{smartPlan.query}</code>}{smartPlan.color&&<div className="smart-color"><i style={{background:smartPlan.color}}/>{smartPlan.color}</div>}<div className="smart-plan-actions"><button onClick={()=>applySmart(false)}>PREVIEW ACTION</button><button className="gold" onClick={()=>applySmart(true)} disabled={smartPlan.action==='SHOW_VERSE'&&!smartVerse}>SEND LIVE</button></div></div>}
         <p className="smart-note">{smartNote||'AI plans the action; VerseFlow retrieves Scripture exactly from the local Bible database.'}</p>
       </div>}
     </aside>
@@ -598,6 +664,15 @@ function FreeLivePage({
         <div><span className="eyebrow">FREE LIVE MODE</span><h2>Display anything, anytime.</h2></div>
         <span className={state.mode==='live'?'live-badge':'ready-badge'}>{state.mode==='live'?'LIVE':'PREVIEW'}</span>
       </div>
+
+      {state.backgroundType==='video'&&state.background&&<div className="video-controls live-video-controls visible-video-controls video-controls-top">
+        <strong>DOWNLOADED VIDEO CONTROLS</strong>
+        <button className="gold" onClick={()=>updateVideoControl({playing:!(state.video?.playing??true)})}>{state.video?.playing===false?'▶ Play':'⏸ Pause'}</button>
+        <button onClick={()=>updateVideoControl({seekDelta:-10})}>−10s</button>
+        <button onClick={()=>updateVideoControl({seekDelta:10})}>+10s</button>
+        <button onClick={()=>updateVideoControl({muted:!(state.video?.muted??false)})}>{state.video?.muted?'🔊 Unmute':'🔇 Mute'}</button>
+        <label>Volume <input type="range" min="0" max="100" value={Math.round((state.video?.volume??0.85)*100)} onChange={e=>updateVideoControl({volume:+e.target.value/100,muted:false})}/><b>{Math.round((state.video?.volume??0.85)*100)}%</b></label>
+      </div>}
 
       {tab==='youtube'&&youtubeId
         ? <div className="youtube-main-preview">
@@ -617,6 +692,7 @@ function FreeLivePage({
         <button className={state.logo?'active':''} onClick={()=>live({...state,mode:'live',logo:!state.logo,black:false,sequence:state.sequence+1})}>LOGO</button>
         <button onClick={()=>live({...state,mode:'live',text:'',reference:'',youtubeId:undefined,black:false,logo:false,clearText:false,background:undefined,backgroundType:'solid',sequence:state.sequence+1})}>EMPTY SCREEN</button>
       </div>
+
     </section>
 
     <Inspector state={state} setState={setState} themes={[state.theme]} media={media} onPickMedia={onPickMedia}/>
@@ -625,7 +701,7 @@ function FreeLivePage({
 
 function PresentPage({state,setState,sendSafety,items,index,setIndex,sendLive,displays,openOut}:{state:PresentationState;setState:(s:PresentationState)=>void;sendSafety:(patch:Partial<PresentationState>)=>void;items:ServiceItem[];index:number;setIndex:(i:number)=>void;sendLive:()=>void;displays:DisplayInfo[];openOut:(k:'audience'|'stage',id:number)=>void}) {
   const prev=()=>setIndex(Math.max(0,index-1)), next=()=>setIndex(Math.min(items.length-1,index+1))
-  return <div className="present-page"><div className="present-main"><CanvasPreview state={state} live={state.mode==='live'}/><div className="transport"><button onClick={prev}><ChevronLeft/> Previous</button><button className="gold go-live" onClick={sendLive}>GO LIVE</button><button onClick={next}>Next <ChevronRight/></button></div>{state.backgroundType==='video'&&<div className="video-controls"><button onClick={()=>setState({...state,video:{...(state.video||{playing:true,muted:true,volume:.8,loop:true}),playing:!(state.video?.playing??true),seekDelta:0,commandId:Date.now()}})}>{state.video?.playing===false?'Play':'Pause'}</button><button onClick={()=>setState({...state,video:{...(state.video||{playing:true,muted:true,volume:.8,loop:true}),seekDelta:-10,commandId:Date.now()}})}>−10s</button><button onClick={()=>setState({...state,video:{...(state.video||{playing:true,muted:true,volume:.8,loop:true}),seekDelta:10,commandId:Date.now()}})}>+10s</button><button onClick={()=>setState({...state,video:{...(state.video||{playing:true,muted:true,volume:.8,loop:true}),muted:!(state.video?.muted??true),seekDelta:0,commandId:Date.now()}})}>{state.video?.muted===false?'Mute':'Unmute'}</button><label>Volume <input type="range" min="0" max="100" value={Math.round((state.video?.volume??.8)*100)} onChange={e=>setState({...state,video:{...(state.video||{playing:true,muted:true,volume:.8,loop:true}),volume:+e.target.value/100,seekDelta:0,commandId:Date.now()}})}/></label></div>}<div className="safety-controls"><button className={state.black?'active-red':''} onClick={()=>sendSafety({black:!state.black,logo:false})}>Black Screen <kbd>B</kbd></button><button className={state.clearText?'active':''} onClick={()=>sendSafety({clearText:!state.clearText})}>Clear Text <kbd>C</kbd></button><button className={state.logo?'active':''} onClick={()=>sendSafety({logo:!state.logo,black:false})}>Logo</button><button className={state.frozen?'active':''} onClick={()=>sendSafety({frozen:!state.frozen})}>Freeze</button></div></div><aside className="present-queue"><div className="panel-title">Current / Next</div>{items.slice(Math.max(0,index-1),index+5).map((it,j)=>{const actual=Math.max(0,index-1)+j;return <button className={actual===index?'current':''} onClick={()=>setIndex(actual)} key={it.id}><span>{actual===index?'CURRENT':actual===index+1?'NEXT':actual+1}</span><strong>{it.title}</strong></button>})}<div className="output-box"><h3>Outputs</h3><p>{displays.length} display{displays.length===1?'':'s'} detected</p>{displays[1]&&<button onClick={()=>openOut('audience',displays[1].id)}>Open on {displays[1].label}</button>}</div></aside></div>
+  return <div className="present-page"><div className="present-main"><CanvasPreview state={state} live={state.mode==='live'}/><div className="transport"><button onClick={prev}><ChevronLeft/> Previous</button><button className="gold go-live" onClick={sendLive}>GO LIVE</button><button onClick={next}>Next <ChevronRight/></button></div>{state.backgroundType==='video'&&<div className="video-controls"><button onClick={()=>setState({...state,video:{...(state.video||{playing:true,muted:false,volume:.85,loop:true}),playing:!(state.video?.playing??true),seekDelta:0,commandId:Date.now()}})}>{state.video?.playing===false?'Play':'Pause'}</button><button onClick={()=>setState({...state,video:{...(state.video||{playing:true,muted:false,volume:.85,loop:true}),seekDelta:-10,commandId:Date.now()}})}>−10s</button><button onClick={()=>setState({...state,video:{...(state.video||{playing:true,muted:false,volume:.85,loop:true}),seekDelta:10,commandId:Date.now()}})}>+10s</button><button onClick={()=>setState({...state,video:{...(state.video||{playing:true,muted:false,volume:.85,loop:true}),muted:!(state.video?.muted??false),seekDelta:0,commandId:Date.now()}})}>{state.video?.muted===false?'Mute':'Unmute'}</button><label>Volume <input type="range" min="0" max="100" value={Math.round((state.video?.volume??.85)*100)} onChange={e=>setState({...state,video:{...(state.video||{playing:true,muted:false,volume:.85,loop:true}),volume:+e.target.value/100,seekDelta:0,commandId:Date.now()}})}/></label></div>}<div className="safety-controls"><button className={state.black?'active-red':''} onClick={()=>sendSafety({black:!state.black,logo:false})}>Black Screen <kbd>B</kbd></button><button className={state.clearText?'active':''} onClick={()=>sendSafety({clearText:!state.clearText})}>Clear Text <kbd>C</kbd></button><button className={state.logo?'active':''} onClick={()=>sendSafety({logo:!state.logo,black:false})}>Logo</button><button className={state.frozen?'active':''} onClick={()=>sendSafety({frozen:!state.frozen})}>Freeze</button></div></div><aside className="present-queue"><div className="panel-title">Current / Next</div>{items.slice(Math.max(0,index-1),index+5).map((it,j)=>{const actual=Math.max(0,index-1)+j;return <button className={actual===index?'current':''} onClick={()=>setIndex(actual)} key={it.id}><span>{actual===index?'CURRENT':actual===index+1?'NEXT':actual+1}</span><strong>{it.title}</strong></button>})}<div className="output-box"><h3>Outputs</h3><p>{displays.length} display{displays.length===1?'':'s'} detected</p>{displays[1]&&<button onClick={()=>openOut('audience',displays[1].id)}>Open on {displays[1].label}</button>}</div></aside></div>
 }
 
 export default function App() {
@@ -640,6 +716,7 @@ export default function App() {
   const [index,setIndex]=useState(0)
   const [displays,setDisplays]=useState<DisplayInfo[]>([])
   const [toast,setToast]=useState('')
+  const [taskProgress,setTaskProgress]=useState<{id:string;label:string;percent:number;stage?:string;done?:boolean;error?:boolean}|null>(null)
   const [globalQ,setGlobalQ]=useState('')
   const [systemHealth,setSystemHealth]=useState<'checking'|'ok'|'warning'>('checking')
   const [audienceStatus,setAudienceStatus]=useState<DisplayStatus|null>(null)
@@ -650,6 +727,7 @@ export default function App() {
   const languageReadyRef=useRef(false)
   const [state,setState]=useState<PresentationState>(()=>itemToPresentation(undefined,undefined,defaultTheme))
   const lastLive=useRef<PresentationState|null>(null)
+  const quickBackRef=useRef<{active:ModuleKey;liveTab:string}|null>(null)
 
   useEffect(()=>{
     if(loading||languageReadyRef.current)return
@@ -680,13 +758,37 @@ export default function App() {
     setToast(`${item.title} added to service`)
   }
   const ensureTelão=async()=>{
-    const saved=Number(data.settings?.audienceDisplayId)
-    if(!Number.isFinite(saved)||!saved){setToast('Escolha o TELÃO em Settings primeiro');setActive('settings');return false}
-    const status=await window.verseflow?.getDisplayStatus(saved)
+    let saved=Number(data.settings?.audienceDisplayId)
+    let status=(Number.isFinite(saved)&&saved)?await window.verseflow?.getDisplayStatus(saved):null
+
+    // Sunday-safe auto setup: if the saved audience display is missing (or was
+    // never chosen), use the first connected NON-primary display. This lets
+    // START TIMER / LIVE work immediately when a projector or second monitor
+    // is plugged in, while never hijacking the operator's primary monitor.
+    const detected=status?.displays?.length?status.displays:(await window.verseflow?.getDisplays()||[])
+    const autoAudience=detected.find(d=>!d.primary)
+    if((!status?.connected||!Number.isFinite(saved)||!saved||status.selected?.primary)&&autoAudience){
+      saved=autoAudience.id
+      audienceIdRef.current=saved
+      await window.verseflow?.saveSetting('audienceDisplayId',saved)
+      status=await window.verseflow?.getDisplayStatus(saved)
+      setToast(`Audience screen detected: ${autoAudience.label}`)
+    }
+
     setAudienceStatus(status||null)
-    if(!status?.connected){setToast('TELÃO NÃO DETECTADO — LIVE bloqueado');setActive('settings');return false}
-    if(status.selected?.primary&&status.displays.length>1){setToast('TELÃO está configurado como MONITOR DO OPERADOR — LIVE bloqueado');setActive('settings');return false}
-    if(!status.openOnSelected){const opened=await window.verseflow?.openOutput('audience',saved);if(!opened?.ok){setToast(opened?.error||'Não foi possível abrir o telão');return false}}
+    if(!status?.connected){
+      setToast('Timer ready — no audience screen connected. Connect a second display/projector, then press START TIMER again.')
+      return false
+    }
+    if(status.selected?.primary){
+      setToast('Audience output cannot use the operator monitor. Connect or select a second display.')
+      setActive('settings')
+      return false
+    }
+    if(!status.openOnSelected){
+      const opened=await window.verseflow?.openOutput('audience',saved)
+      if(!opened?.ok){setToast(opened?.error||'Could not open the audience screen');return false}
+    }
     setAudienceStatus(await window.verseflow?.getDisplayStatus(saved)||status)
     return true
   }
@@ -726,15 +828,29 @@ export default function App() {
     const saved=Number(data.settings?.audienceDisplayId)
     audienceIdRef.current=Number.isFinite(saved)&&saved?saved:null
     if(!Number.isFinite(saved)||!saved)return
-    window.verseflow?.getDisplayStatus(saved).then(async status=>{
+    window.verseflow?.getDisplayStatus(saved).then(status=>{
+      // Only inspect the saved output during startup. Opening a fullscreen
+      // Audience window automatically can cover the operator UI when the
+      // saved display is the primary/only monitor. The output is opened on
+      // demand by ensureTelão() when the operator actually sends LIVE.
       setAudienceStatus(status)
-      if(status.connected&&!status.openOnSelected){await window.verseflow?.openOutput('audience',saved);setAudienceStatus(await window.verseflow?.getDisplayStatus(saved)||status)}
     })
   },[loading,data.settings?.audienceDisplayId,displays.length])
   useEffect(()=>{if(!toast)return;const t=setTimeout(()=>setToast(''),2200);return()=>clearTimeout(t)},[toast])
   useEffect(()=>{
+    if(!window.verseflow?.onTaskProgress)return
+    let finishTimer:number|undefined
+    return window.verseflow.onTaskProgress(progress=>{
+      if(finishTimer)window.clearTimeout(finishTimer)
+      setTaskProgress(progress)
+      if(progress.done)finishTimer=window.setTimeout(()=>setTaskProgress(null),progress.error?4200:1800)
+    })
+  },[])
+  useEffect(()=>{
     const fn=(e:KeyboardEvent)=>{
       if(active!=='present') return
+      const target=e.target as HTMLElement|null
+      if(target?.closest('input, textarea, select, [contenteditable=\"true\"]')) return
       if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();previewItem(Math.min(items.length-1,index+1))}
       if(e.key==='ArrowLeft'){e.preventDefault();previewItem(Math.max(0,index-1))}
       if(e.key.toLowerCase()==='b') sendSafety({black:!state.black,logo:false})
@@ -750,14 +866,15 @@ export default function App() {
   const liveVerse=(v:Verse)=>{const i=verseToServiceItem(v);const p=itemToPresentation(i,undefined,state.theme,state.sequence+1);const live={...p,background:state.background,backgroundType:state.backgroundType,audio:state.audio,mode:'live' as const};void sendLiveState(live,'Versículo no TELÃO').then(ok=>{if(ok)setActive('present')})}
   const saveSong=async(s:Song)=>{await window.verseflow?.upsert('songs',s);await reload();setToast('Song saved')}
   const addSong=(s:Song)=>addItem({id:uid('songitem'),type:'song',title:s.title,payload:{text:s.sections.flatMap(x=>x.lines).join('\n'),...atmospherePayload(state)}})
+  const addEntireLyricsSong=(s:Song)=>{const slides=lyricSlides(s);setItems(current=>[...current,...slides.map((sl,i)=>({id:uid('lyricsitem'),type:'song' as const,title:`${s.title} · ${sl.label}${slides.length>1?` · ${i+1}/${slides.length}`:''}`,subtitle:s.author||'Lyrics',payload:{text:sl.lines.join('\n'),reference:sl.label,...atmospherePayload(state)}}))]);setToast(`${s.title} added to service as ${slides.length} lyric slide${slides.length===1?'':'s'}`)}
   const previewSong=(song:Song)=>{const sec=song.sections[0];if(!sec)return;setState(x=>({...x,mode:'preview',title:song.title,text:sec.lines.join('\n'),reference:sec.label,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false,sequence:x.sequence+1}))}
-  const liveSong=(song:Song)=>{const sec=song.sections[0];if(!sec)return;const live={...state,mode:'live' as const,title:song.title,text:sec.lines.join('\n'),reference:sec.label,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false,sequence:state.sequence+1};void sendLiveState(live,'Letra no TELÃO').then(ok=>{if(ok)setActive('present')})}
+  const liveSong=(song:Song)=>{const sec=song.sections[0];if(!sec)return;const live:PresentationState={...state,mode:'live',title:song.title,text:sec.lines.join('\n'),reference:sec.label,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false,sequence:state.sequence+1};void sendLiveState(live,'Letra no TELÃO').then(ok=>{if(ok)setActive('present')})}
   const importMedia=async()=>{const picked=await window.verseflow?.pickMedia()||[];for(const m of picked) await window.verseflow?.upsert('media',m);await reload()}
   const addMedia=(m:MediaItem)=>addItem({id:uid('mediaitem'),type:m.type==='audio'?'audio':m.type==='video'?'video':'image',title:m.name,payload:m.type==='audio'?{text:'',audioPath:m.path}:{text:'',background:m.path,backgroundType:m.type==='video'?'video':'image'}})
-  const previewMedia=(m:MediaItem)=>{if(m.type==='audio'){setState(x=>({...x,mode:'preview',title:m.name,audio:{path:m.path,playing:false,volume:.85,loop:false},sequence:x.sequence+1}));setToast('Audio ready in Preview');return}setState(x=>({...x,mode:'preview',title:m.name,text:'',reference:'',layout:'center',background:m.path,backgroundType:m.type==='video'?'video':'image',youtubeId:undefined,black:false,logo:false,clearText:false,sequence:x.sequence+1}))}
+  const previewMedia=(m:MediaItem)=>{if(m.type==='audio'){setState(x=>({...x,mode:'preview',title:m.name,audio:{path:m.path,playing:false,volume:.85,loop:false},sequence:x.sequence+1}));setActive('present');setToast('Audio ready in Preview');return}setState(x=>({...x,mode:'preview',title:m.name,text:'',reference:'',layout:'center',background:m.path,backgroundType:m.type==='video'?'video':'image',youtubeId:undefined,black:false,logo:false,clearText:false,sequence:x.sequence+1}));setActive('present');setToast(m.type==='video'?'Video opened in Preview':'Image opened in Preview')}
   const applyMediaBackground=(m:MediaItem)=>{if(m.type==='audio')return;setState(x=>{const darkDefault=['#2f3133','#111111','#000000'].includes(String(x.theme.textColor).toLowerCase());return{...x,background:m.path,backgroundType:m.type==='video'?'video':'image',youtubeId:undefined,black:false,logo:false,theme:{...x.theme,overlay:Math.max(.46,x.theme.overlay||0),textColor:darkDefault?'#fffaf0':x.theme.textColor},sequence:x.sequence+1}});setToast(`${m.name} set as background`)}
   const applyMediaMusic=(m:MediaItem)=>{if(m.type!=='audio')return;setState(x=>({...x,audio:{path:m.path,playing:true,volume:x.audio?.volume??.72,loop:true},sequence:x.sequence+1}));setToast(`${m.name} added as background music`)}
-  const liveMedia=(m:MediaItem)=>{if(m.type==='audio'){const live={...state,mode:'live' as const,title:m.name,audio:{path:m.path,playing:true,volume:.85,loop:false},sequence:state.sequence+1};void sendLiveState(live,'Áudio no TELÃO');return}const live={...state,mode:'live' as const,title:m.name,text:'',reference:'',background:m.path,backgroundType:m.type==='video'?'video':'image' as const,youtubeId:undefined,audio:m.type==='video'?undefined:state.audio,black:false,logo:false,clearText:false,sequence:state.sequence+1};void sendLiveState(live,'Mídia no TELÃO').then(ok=>{if(ok)setActive('present')})}
+  const liveMedia=(m:MediaItem)=>{if(m.type==='audio'){const live={...state,mode:'live' as const,title:m.name,audio:{path:m.path,playing:true,volume:.85,loop:false},sequence:state.sequence+1};void sendLiveState(live,'Áudio no TELÃO');return}const live:PresentationState={...state,mode:'live',title:m.name,text:'',reference:'',background:m.path,backgroundType:m.type==='video'?'video':'image',youtubeId:undefined,audio:m.type==='video'?undefined:state.audio,black:false,logo:false,clearText:false,sequence:state.sequence+1};void sendLiveState(live,'Mídia no TELÃO').then(ok=>{if(ok)setActive('present')})}
   const openOut=async(k:'audience'|'stage',id:number)=>{const r=await window.verseflow?.openOutput(k,id);if(k==='audience')setAudienceStatus(await window.verseflow?.getDisplayStatus(id)||null);setToast(r?.ok?(k==='audience'?'TELÃO aberto':`${k} display opened`):r?.error||'Could not open display')}
   const saveTheme=async(t:Theme)=>{await window.verseflow?.upsert('themes',t);await reload()}
   const applyTheme=(t:Theme)=>setState(s=>({...s,theme:t}))
@@ -781,6 +898,41 @@ export default function App() {
   const globalSearch=async()=>{const q=globalQ.trim();if(!q)return;const bible=window.verseflow?.searchBible?await window.verseflow.searchBible(q,undefined,1):[];const verse=bible?.[0];if(verse){previewVerse(verse);setActive('present');setToast(`Previewing ${verse.book} ${verse.chapter}:${verse.verse}`);return}const lower=q.toLowerCase();const song=data.songs.find(x=>x.title.toLowerCase().includes(lower));if(song?.sections[0]){const sec=song.sections[0];setState(s=>({...s,mode:'preview',title:song.title,text:sec.lines.join('\n'),reference:sec.label,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false,sequence:s.sequence+1}));setActive('present');setToast(`Previewing ${song.title}`);return}const m=data.media.find(x=>x.name.toLowerCase().includes(lower));if(m){setState(s=>({...s,mode:'preview',title:m.name,text:'',reference:'',layout:'center',background:m.path,backgroundType:m.type==='video'?'video':'image',youtubeId:undefined,black:false,logo:false,clearText:false,sequence:s.sequence+1}));setActive('present');setToast(`Previewing ${m.name}`);return}setToast('No Bible verse, song, or media matched that search')}
   const globalImport=async()=>{if(active==='bible'){const r=await window.verseflow?.importBible();if(r?.ok){await reload();setToast(`${r.translation}: ${r.imported} verses imported`)}else if(r?.error!=='Canceled')setToast(r?.error||'Import failed');return}await importMedia();setToast('Media import finished')}
 
+  const quickNavigate=(target:ModuleKey,tab?:string)=>{
+    quickBackRef.current={active,liveTab}
+    if(tab)setLiveTab(tab)
+    setActive(target)
+  }
+  const quickBack=()=>{
+    const prev=quickBackRef.current
+    if(!prev){setToast('No previous sidebar screen yet');return}
+    setLiveTab(prev.liveTab)
+    setActive(prev.active)
+    quickBackRef.current=null
+    setToast('Back to previous screen')
+  }
+  const quickPrevious=()=>{
+    if(!items.length){setToast('No service items yet');return}
+    if(index<=0){setToast('Already at the first service item');return}
+    previewItem(index-1)
+  }
+  const quickNext=()=>{
+    if(!items.length){setToast('No service items yet');return}
+    if(index>=items.length-1){setToast('Already at the last service item');return}
+    previewItem(index+1)
+  }
+  const quickStopAudio=()=>{
+    if(!state.audio?.path){setToast('No audio is playing');return}
+    sendSafety({audio:undefined})
+    setToast('Audio stopped')
+  }
+  const quickCamera=async()=>{
+    quickBackRef.current={active,liveTab}
+    setActive('production')
+    const r=await window.verseflow?.obsOpen()
+    setToast(r?.ok?'Camera/OBS controls opened':'Camera controls are in Production. Open OBS when you are ready.')
+  }
+
   useEffect(()=>window.verseflow?.onCompanionAction(action=>{
     if(action==='black')sendSafety({black:!state.black,logo:false})
     if(action==='clear')sendSafety({clearText:!state.clearText})
@@ -794,16 +946,35 @@ export default function App() {
   if (loading) return <div className="boot-screen"><div className="brand-mark big">V</div><span>Loading VerseFlow…</span></div>
 
   return <div className="app-shell">
-    <Nav active={active} onChange={setActive}/>
+    <Nav active={active} onChange={setActive} controls={<div className="sidebar-quick-controls" aria-label="Live controls">
+      <button className={`side-control side-color-1 ${state.black?'quick-active':''}`} onClick={()=>sendSafety({black:!state.black,logo:false})}>BLACK</button>
+      <button className={`side-control side-color-2 ${state.logo?'quick-active':''}`} onClick={()=>sendSafety({logo:!state.logo,black:false})}>LOGO</button>
+      <button className={`side-control side-color-3 ${state.clearText?'quick-active':''}`} onClick={()=>sendSafety({clearText:!state.clearText})}>CLEAR TEXT</button>
+      <button className="side-control side-color-4" onClick={()=>quickNavigate('bible')}>Bible</button>
+      <button className="side-control side-color-5" onClick={()=>quickNavigate('songs')}>Songs</button>
+      <button className="side-control side-color-6" onClick={()=>quickNavigate('lyrics')}>LYRICS</button>
+      <button className="side-control side-color-7" onClick={()=>quickNavigate('media')}>Media</button>
+      <button className="side-control side-color-8" onClick={()=>quickNavigate('present','youtube')}><Youtube size={13}/> YouTube</button>
+      <button className="side-control side-color-9" onClick={()=>quickNavigate('present','timer')}><TimerReset size={13}/> Timer</button>
+      <button className="side-control side-color-10" onClick={()=>quickNavigate('present','lower')}><Type size={13}/> Lower Third</button>
+      <button className="side-control side-color-11" onClick={()=>quickNavigate('production')}><SlidersHorizontal size={13}/> Production</button>
+      <button className="side-control side-color-12" onClick={()=>void quickCamera()}><Monitor size={13}/> Camera</button>
+      <button className="side-control side-color-13" onClick={quickStopAudio}>STOP AUDIO</button>
+      <button className="side-control side-color-14" onClick={quickPrevious}>Previous</button>
+      <button className="side-control side-color-15" onClick={quickBack}>BACK</button>
+      <button className="side-control side-live" onClick={sendLive}>LIVE</button>
+      <button className="side-control side-color-16" onClick={quickNext}>Next</button>
+    </div>}/>
     <main className="main-shell">
       <header className="topbar"><div className="global-search"><Search size={16}/><input value={globalQ} onChange={e=>setGlobalQ(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void globalSearch()}} placeholder="Search Bible, songs, media…"/></div><button onClick={newSlide}><CirclePlus size={16}/> New Slide</button><button onClick={globalImport}><Import size={16}/> Import</button><button title="Undo presentation change" onClick={undoPresentation}><Undo2 size={16}/></button><div className="top-spacer"/><LanguageSwitcher language={language} onChange={setLanguage}/><span className="offline"><WifiOff size={14}/> Offline-first</span><button className={`wall-health-badge ${audienceStatus?.connected?'connected':'disconnected'}`} onClick={()=>setActive('settings')} title="Configurar telão">{audienceStatus?.connected?<CheckCircle2 size={13}/>:<AlertTriangle size={13}/>} {audienceStatus?.connected?'TELÃO CONECTADO':'SEM TELÃO'}</button><button className={`system-health-badge ${systemHealth}`} onClick={()=>setActive('settings')} title="Open System Check">{systemHealth==='ok'?<CheckCircle2 size={13}/>:systemHealth==='warning'?<AlertTriangle size={13}/>:null}{systemHealth==='ok'?'SYSTEM OK':systemHealth==='warning'?'CHECK SYSTEM':'CHECKING'}</button><button className="present-top" onClick={()=>setActive('present')}><Monitor size={16}/> Present</button><span className={state.mode==='live'?'live-badge':'ready-badge'}>{state.mode==='live'?'LIVE':'READY'}</span><span className="clock"><Clock3 size={14}/>{new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></header>
       <div className="workspace">
         {active==='dashboard'&&<Dashboard go={setActive} data={data}/>}
         {active==='bible'&&<BiblePage verses={data.verses} translations={data.translations} onPreview={previewVerse} onAdd={v=>{const item=verseToServiceItem(v);addItem({...item,payload:{...item.payload,...atmospherePayload(state)}})}} onLive={liveVerse} onImport={async()=>{const r=await window.verseflow?.importBible();if(r?.ok){await reload();setToast(`${r.translation}: ${r.imported} verses imported`)}else if(r?.error!=='Canceled')setToast(r?.error||'Import failed')}} onInstalled={async()=>{await reload();setToast('Bible installed and ready offline')}} state={state} setState={setState} themes={themes} items={items} media={data.media} onPickMedia={importMedia}/>}
+        {active==='lyrics'&&<LyricsPage songs={data.songs} onSave={saveSong} onAddToService={addEntireLyricsSong} onLiveState={next=>{void sendLiveState(next,'Lyrics on TELÃO')}} state={state} setState={setStateAndSync}/>}
         {active==='songs'&&<SongsPage songs={data.songs} onSave={saveSong} onAdd={addSong} onPreview={previewSong} onLive={liveSong} state={state} setState={setState} media={data.media} onPickMedia={importMedia}/>}
         {active==='media'&&<MediaPage media={data.media} onImport={importMedia} onAdd={addMedia} onPreview={previewMedia} onLive={liveMedia} onBackground={applyMediaBackground} onMusic={applyMediaMusic}/>}
         {active==='playlists'&&<PlaylistPage items={items} setItems={setItems} onSelect={previewItem} onLive={liveAt} onSave={async(name,list)=>{const service={id:uid('service'),title:name,date:new Date().toISOString(),items:list};await window.verseflow?.upsert('services',service);await reload();setToast('Service saved')}}/>}
-        {active==='present'&&<FreeLivePage state={state} setState={setStateAndSync} onSendLive={(s)=>{const live=s||{...state,mode:'live' as const,sequence:state.sequence+1};void sendLiveState(live,'TELÃO atualizado')}} verses={data.verses} translations={data.translations} media={data.media} onPickMedia={importMedia} songs={data.songs} onSaveSong={saveSong} requestedTab={liveTab}/>}
+        {active==='present'&&<FreeLivePage state={state} setState={setStateAndSync} onSendLive={(s)=>{const live=s||{...state,mode:'live' as const,sequence:state.sequence+1};void sendLiveState(live,'TELÃO atualizado')}} verses={data.verses} translations={data.translations} media={data.media} onPickMedia={importMedia} songs={data.songs} onSaveSong={saveSong} requestedTab={liveTab} onMediaAdded={reload}/>}
         {active==='themes'&&<ThemesPage themes={themes} onApply={applyTheme} onSave={saveTheme}/>}
         {active==='production'&&<ProductionPage media={data.media} displays={displays} onCompatibleAdded={async(item)=>{await window.verseflow?.upsert('media',item);await reload()}} onCaption={showCaption} onAutoScripture={autoScriptureFromCaption}/>}
         {active==='settings'&&<SettingsPage displays={displays} settings={data.settings} translations={data.translations} refresh={refreshDisplays} openOut={openOut} closeOut={k=>window.verseflow?.closeOutput(k)} onSaveSetting={async(k,v)=>{await window.verseflow?.saveSetting(k,v);await reload();setToast('Setting saved')}} onBackup={async()=>{const r=await window.verseflow?.exportBackup();setToast(r?.ok?'Backup exported':r?.error||'Backup failed')}} onRestore={async()=>{const r=await window.verseflow?.importBackup();if(r?.ok)await reload();setToast(r?.ok?'Backup restored':r?.error||'Restore failed')}}/>}
@@ -811,23 +982,7 @@ export default function App() {
       {active!=='present'&&['bible'].indexOf(active)<0&&<div className="bottom-status"><span><span className="green-dot"/> Core presentation engine ready</span><span>{audienceStatus?.connected?'Telão conectado':'Telão não detectado'} · {displays.length} tela{displays.length===1?'':'s'}</span></div>}
     </main>
     {active==='dashboard' ? null : active==='bible' ? null : active==='present' ? null : null}
-    <div className="quick-bar" aria-label="Quick Bar">
-      <button className={state.black?'active-red':''} onClick={()=>sendSafety({black:!state.black,logo:false})}>BLACK</button>
-      <button className={state.logo?'active':''} onClick={()=>sendSafety({logo:!state.logo,black:false})}>LOGO</button>
-      <button className={state.clearText?'active':''} onClick={()=>sendSafety({clearText:!state.clearText})}>CLEAR TEXT</button>
-      <button onClick={()=>setActive('bible')}>Bible</button>
-      <button onClick={()=>setActive('songs')}>Songs</button>
-      <button onClick={()=>setActive('media')}>Media</button>
-      <button onClick={()=>{setLiveTab('youtube');setActive('present')}}><Youtube size={13}/> YouTube</button>
-      <button onClick={()=>{setLiveTab('timer');setActive('present')}}><TimerReset size={13}/> Timer</button>
-      <button onClick={()=>{setLiveTab('lower');setActive('present')}}><Type size={13}/> Lower Third</button>
-      <button onClick={()=>setActive('production')}><SlidersHorizontal size={13}/> Production</button>
-      <button onClick={()=>setActive('production')}><Monitor size={13}/> Camera</button>
-      <button disabled={!state.audio?.path} onClick={()=>sendSafety({audio:undefined})}>STOP AUDIO</button>
-      <button disabled={!items.length} onClick={()=>previewItem(Math.max(0,index-1))}>Previous</button>
-      <button className="gold" onClick={sendLive}>LIVE</button>
-      <button disabled={!items.length} onClick={()=>previewItem(Math.min(items.length-1,index+1))}>Next</button>
-    </div>
+    {taskProgress&&<div className={`global-task-progress ${taskProgress.error?'error':taskProgress.done?'done':''}`} role="status" aria-live="polite"><div className="global-task-progress-head"><strong>{taskProgress.label}</strong><b>{Math.round(taskProgress.percent)}%</b></div><div className="global-task-progress-track"><span style={{width:`${Math.max(0,Math.min(100,taskProgress.percent))}%`}}/></div><small>{taskProgress.stage||'Working…'}</small></div>}
     {toast&&<div className="toast">{toast}</div>}
   </div>
 }

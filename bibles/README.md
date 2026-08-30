@@ -42,3 +42,7 @@ Translations marked **Import** already appear in the Bible Library and can accep
 After a translation is installed/imported, VerseFlow stores the verses in its local SQLite database and they work offline.
 
 NIV, NKJV and Portuguese NVI remain local-import slots.
+
+
+## User-provided always-available translations
+VerseFlow bundles the user's supplied ASV, AKJV, AMP, and NKJV copies and imports them automatically on startup if missing. BRG is also bundled as `BRG-PARTIAL` because the supplied archive currently contains only Genesis, Exodus, Leviticus, and Numbers. Rights for non-public-domain user-provided translations remain with their respective rightsholders.

@@ -11,7 +11,7 @@ Checks completed in the build workspace:
   * English default + Brazilian Portuguese + Spanish UI switching.
   * supplied Brazilian flag asset.
   * no-translate protection for Scripture/live presentation content.
-  * mpv, FFmpeg, whisper.cpp, OBS, HyperFrames, Companion IPC wiring.
+  * mpv, FFmpeg, whisper.cpp, OBS, Companion IPC wiring.
   * Smart Presenter timer/lower-third/stop-audio actions.
   * yt-dlp + Deno installer wiring.
   * YouTube localhost HTTP origin/referrer architecture.

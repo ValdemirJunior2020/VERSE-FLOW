@@ -1,0 +1,12 @@
+VERSEFLOW V32 - PYTHON DETECTION FIX
+
+Fixes the Windows installer failure where WinGet progress text was accidentally captured together with the Python executable path.
+
+Changes:
+- WinGet install progress is written to the console only and cannot leak into function return values.
+- Python detection validates a real Python 3.11+ executable by running Python code.
+- Prefers python.org installs under LOCALAPPDATA/Program Files.
+- Re-detects Python after WinGet installation and verifies the executable before creating any venv.
+- Microsoft Store aliases/stubs are not accepted unless they execute real Python.
+- Existing isolated VerseFlow InternetAgent environments remain unchanged and are reused.
+- .git and .env are not modified.

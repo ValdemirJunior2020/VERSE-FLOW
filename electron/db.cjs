@@ -43,7 +43,7 @@ class VerseFlowDb {
     }
     for (const t of defaultThemes) this.putObject('themes', t.id, t, false)
     if (!this.listObjects('songs').length) {
-      const song={id:'song-amazing-grace',title:'Amazing Grace',author:'John Newton',sections:[
+      const song={id:'song-amazing-grace',title:'Amazing Grace',author:'John Newton',source:'Traditional hymn · John Newton (1772)',copyright:'Public Domain',language:'English',rights:'public-domain',notes:'Bundled offline public-domain hymn starter.',sections:[
         {id:'v1',label:'Verse 1',lines:['Amazing grace, how sweet the sound','That saved a wretch like me']},
         {id:'v2',label:'Verse 2',lines:['I once was lost, but now am found','Was blind, but now I see']}
       ]}
@@ -103,6 +103,44 @@ class VerseFlowDb {
     return this.rows("SELECT * FROM verses WHERE LOWER(book || ' ' || chapter || ':' || verse || ' ' || text) LIKE ? ORDER BY id LIMIT ?",[like,max])
   }
   findBibleReference(reference,code){return this.searchBible(reference,code,1)[0]||null}
+  suggestBibleReferences(reference,code,limit=3){
+    const raw=String(reference||'').trim()
+    const parsed=raw.match(/^(.+?)\s+(\d{1,3}):(\d{1,3})$/)
+    if(!parsed)return []
+    const requestedBook=parsed[1].trim(), requestedChapter=Number(parsed[2]), requestedVerse=Number(parsed[3])
+    const preferred=String(code||'').trim().toUpperCase()
+    const available=this.rows('SELECT code FROM translations ORDER BY CASE WHEN code=? THEN 0 WHEN code=? THEN 1 ELSE 2 END, name',[preferred,'KJV']).map(r=>String(r.code))
+    const translation=preferred&&available.includes(preferred)?preferred:(available.includes('KJV')?'KJV':available[0])
+    if(!translation)return []
+    const norm=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim()
+    const strip=s=>norm(s).replace(/^[1-3]\s+/,'').trim()
+    const lev=(a,b)=>{
+      const dp=Array.from({length:a.length+1},()=>Array(b.length+1).fill(0))
+      for(let i=0;i<=a.length;i++)dp[i][0]=i
+      for(let j=0;j<=b.length;j++)dp[0][j]=j
+      for(let i=1;i<=a.length;i++)for(let j=1;j<=b.length;j++)dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1))
+      return dp[a.length][b.length]
+    }
+    const books=this.getBibleBooks(translation)
+    if(!books.length)return []
+    const wanted=norm(requestedBook)
+    const exact=books.find(b=>norm(b)===wanted)
+    const numbered=books.filter(b=>strip(b)===strip(requestedBook))
+    let candidates=[]
+    if(exact)candidates=[exact]
+    else if(numbered.length)candidates=numbered
+    else candidates=books.slice().sort((a,b)=>lev(wanted,norm(a))-lev(wanted,norm(b))).slice(0,Math.max(1,limit))
+    const nearest=book=>{
+      const chapters=this.getBibleChapters(translation,book)
+      if(!chapters.length)return null
+      const chapter=chapters.includes(requestedChapter)?requestedChapter:chapters.reduce((best,x)=>Math.abs(x-requestedChapter)<Math.abs(best-requestedChapter)?x:best,chapters[0])
+      const verses=this.getBibleChapter(translation,book,chapter).map(v=>Number(v.verse))
+      if(!verses.length)return null
+      const verse=verses.includes(requestedVerse)?requestedVerse:verses.reduce((best,x)=>Math.abs(x-requestedVerse)<Math.abs(best-requestedVerse)?x:best,verses[0])
+      return `${book} ${chapter}:${verse}`
+    }
+    return candidates.map(nearest).filter(Boolean).filter((x,i,a)=>a.indexOf(x)===i).slice(0,Math.max(1,Math.min(5,Number(limit)||3)))
+  }
 
   loadAll(){
     const settings={}

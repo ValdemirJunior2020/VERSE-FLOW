@@ -1,0 +1,8 @@
+VerseFlow V25 Footer Layout Fix
+
+- Quick Bar now sits above the 30px bottom status row instead of covering page content.
+- Workspace reserves a larger bottom safe area for the fixed Quick Bar.
+- Lyrics editor reserves extra bottom spacing so Add Verse / Add Chorus / Add Bridge / Add Section remain visible and clickable.
+- Added responsive safe spacing for narrower windows.
+- No .git files changed.
+- No .env files were modified.

@@ -1,0 +1,7 @@
+VERSEFLOW V23
+
+- Removed the local AI artwork-generation subsystem and its large model/tool downloads.
+- Smart installer now checks 10 tool groups.
+- Kept normal Media image/video import, backgrounds, YouTube, FFmpeg, mpv, OBS, Live Desk and presentation features.
+- Fixed dark Lyrics panels so labels/helper text are high-contrast and form fields remain dark-text-on-light.
+- .git and .env files are not modified by this change.
