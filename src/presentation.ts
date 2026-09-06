@@ -7,8 +7,8 @@ export const defaultTheme: Theme = {
   fontSize: 64,
   alignment: 'center',
   overlay: 0.54,
-  textColor: '#2f3133',
-  accentColor: '#c89a32',
+  textColor: '#000000',
+  accentColor: '#8f6a1f',
   transition: 'fade'
 }
 
