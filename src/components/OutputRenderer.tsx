@@ -50,6 +50,9 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
   const bg = useMemo(() => mediaUrl(state.background), [state.background])
   const align = state.theme.alignment || 'center'
   const audioNode=state.audio?.path?<audio ref={audioRef} src={mediaUrl(state.audio.path)} autoPlay />:null
+  const solidOutput=state.backgroundType==='solid' || !state.backgroundType
+  const outputTextColor=solidOutput?'#000000':state.theme.textColor
+  const outputReferenceColor=solidOutput?'#000000':state.theme.accentColor
 
   if (stage) {
     return <div className="stage-output" data-no-translate="true">
@@ -85,10 +88,10 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
   }}>
     {audioNode}
     {state.backgroundType === 'video' && bg && <video ref={videoRef} className="audience-video" src={bg} autoPlay loop muted />}
-    <div className={`audience-copy align-${align} layout-${state.layout||'center'}`} style={{fontFamily: state.theme.fontFamily, color: state.theme.textColor}}>
+    <div className={`audience-copy align-${align} layout-${state.layout||'center'}`} style={{fontFamily: state.theme.fontFamily, color: outputTextColor}}>
       {state.layout==='countdown' ? <div className="audience-countdown"><span>{state.timerLabel||'Service starts in'}</span><strong>{(()=>{const sec=Math.max(0,Math.ceil(((state.timerEndAt||Date.now())-now.getTime())/1000));return `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`})()}</strong></div> : <>
         {!state.clearText && <div className="audience-text" style={{fontSize: `${state.theme.fontSize}px`}}>{state.text}</div>}
-        {!state.clearText && state.reference && <div className="audience-reference" style={{color: state.theme.accentColor}}>{state.reference}</div>}
+        {!state.clearText && state.reference && <div className="audience-reference" style={{color: outputReferenceColor}}>{state.reference}</div>}
       </>}
     </div>
   </div>
