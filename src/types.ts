@@ -204,6 +204,8 @@ export interface VerseFlowApi {
   downloadMediaUrl: (url: string) => Promise<{ ok: boolean; item?: MediaItem; error?: string }>
   mpvLaunch: (path: string, screenIndex?: number) => Promise<{ ok: boolean; error?: string }>
   mpvCommand: (command: 'pause'|'stop'|'seekBack'|'seekForward'|'volume50'|'volume100') => Promise<{ ok: boolean; error?: string }>
+  mpvStatus: () => Promise<{ ok: boolean; position?: number; duration?: number; paused?: boolean; error?: string }>
+  mpvSeekTo: (seconds: number) => Promise<{ ok: boolean; error?: string }>
   ffmpegProbe: (path: string) => Promise<{ ok: boolean; summary?: string; error?: string }>
   ffmpegCompatible: (path: string) => Promise<{ ok: boolean; item?: MediaItem; error?: string }>
   whisperStart: (language?: string) => Promise<{ ok: boolean; error?: string }>
