@@ -142,10 +142,10 @@ export default function CanvasPreview({ state, live }: { state: PresentationStat
         onPointerUp={onPointerUp}
         onPointerCancel={()=>{dragRef.current=false}}
         title="Drag the verse or lyrics anywhere on the TV wall"
-        style={{fontFamily:shown.theme.fontFamily,color:shown.theme.textColor,textShadow:shown.background?'0 3px 14px rgba(0,0,0,.72)':'none',position:'absolute',left:`${positionX}%`,top:`${positionY}%`,transform:'translate(-50%,-50%)',cursor:'grab',touchAction:'none',userSelect:'none',width:'92%'}}>
+        style={{fontFamily:shown.theme.fontFamily,color:'#000000',textShadow:'none',position:'absolute',left:`${positionX}%`,top:`${positionY}%`,transform:'translate(-50%,-50%)',cursor:'grab',touchAction:'none',userSelect:'none',width:'92%'}}>
         {shown.black ? <div className="screen-mode-label">BLACK SCREEN</div> : shown.logo ? <div className="vf-logo-mark large">VF</div> : shown.layout==='countdown' ? <div className="countdown-copy"><span>{shown.timerLabel||'Service starts in'}</span><strong>{formatRemaining(shown.timerEndAt)}</strong></div> : <>
           {!shown.clearText && <div className="canvas-text" style={{fontSize:`${Math.max(22,shown.theme.fontSize*.43)}px`}}>{shown.text || 'Select a scripture, song, image, or announcement.'}</div>}
-          {!shown.clearText && <div className="canvas-ref" style={{color:shown.theme.accentColor}}>{shown.reference}</div>}
+          {!shown.clearText && <div className="canvas-ref" style={{color:'#000000'}}>{shown.reference}</div>}
         </>}
       </div>
     </div>
