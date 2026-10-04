@@ -26,6 +26,9 @@ export default function ProductionPage({
   const [scenes,setScenes]=useState<string[]>([])
   const [scene,setScene]=useState('')
   const [message,setMessage]=useState('')
+  const [mpvPosition,setMpvPosition]=useState(0)
+  const [mpvDuration,setMpvDuration]=useState(0)
+  const [mpvDragging,setMpvDragging]=useState(false)
 
   const localMedia=useMemo(()=>media.filter(m=>m.path),[media])
   const refresh=async()=>setTools(await window.verseflow?.toolStatus()||null)
@@ -35,8 +38,32 @@ export default function ProductionPage({
     setCaption(text)
     if(autoFollow) onAutoScripture(text)
   }),[autoFollow,onAutoScripture])
+  useEffect(()=>{
+    let alive=true
+    const sync=async()=>{
+      const r=await window.verseflow?.mpvStatus()
+      if(!alive||!r?.ok)return
+      if(!mpvDragging)setMpvPosition(Math.max(0,r.position||0))
+      setMpvDuration(Math.max(0,r.duration||0))
+    }
+    void sync()
+    const timer=setInterval(()=>void sync(),500)
+    return()=>{alive=false;clearInterval(timer)}
+  },[mpvDragging])
 
   const pickDefault=()=>selectedPath||localMedia.find(m=>m.type==='video')?.path||localMedia[0]?.path||''
+  const formatMediaTime=(seconds:number)=>{
+    const whole=Math.max(0,Math.floor(seconds||0))
+    const h=Math.floor(whole/3600),m=Math.floor((whole%3600)/60),s=whole%60
+    return h>0
+      ? h+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')
+      : m+':'+String(s).padStart(2,'0')
+  }
+  const seekMpv=(seconds:number)=>{
+    const value=Math.max(0,Math.min(mpvDuration||seconds,seconds))
+    setMpvPosition(value)
+    void window.verseflow?.mpvSeekTo(value)
+  }
   const result=async(p:Promise<{ok:boolean;error?:string}>|undefined,okText:string)=>{
     const r=await p
     setMessage(r?.ok?okText:r?.error||'Action failed')
@@ -81,10 +108,26 @@ export default function ProductionPage({
         <div className="prod-actions">
           <button className="gold" onClick={()=>void result(window.verseflow?.mpvLaunch(pickDefault(),screenIndex),'mpv opened fullscreen')}>Launch Fullscreen</button>
           <button onClick={()=>void result(window.verseflow?.mpvCommand('pause'),'mpv pause/resume sent')}>Pause / Resume</button>
-          <button onClick={()=>void result(window.verseflow?.mpvCommand('seekBack'),'-10 seconds')}>-10s</button>
-          <button onClick={()=>void result(window.verseflow?.mpvCommand('seekForward'),'+10 seconds')}>+10s</button>
           <button onClick={()=>void result(window.verseflow?.mpvCommand('stop'),'mpv stopped')}>Stop</button>
         </div>
+        <div style={{display:'grid',gridTemplateColumns:'52px 1fr 52px',gap:10,alignItems:'center',marginTop:12}}>
+          <span style={{fontVariantNumeric:'tabular-nums',fontSize:12}}>{formatMediaTime(mpvPosition)}</span>
+          <input
+            aria-label="Media timeline"
+            type="range"
+            min={0}
+            max={Math.max(1,mpvDuration)}
+            step={0.1}
+            value={Math.min(mpvPosition,Math.max(1,mpvDuration))}
+            onPointerDown={()=>setMpvDragging(true)}
+            onPointerUp={e=>{setMpvDragging(false);seekMpv(Number(e.currentTarget.value))}}
+            onPointerCancel={()=>setMpvDragging(false)}
+            onChange={e=>seekMpv(Number(e.target.value))}
+            style={{width:'100%',cursor:'pointer'}}
+          />
+          <span style={{fontVariantNumeric:'tabular-nums',fontSize:12,textAlign:'right'}}>{formatMediaTime(mpvDuration)}</span>
+        </div>
+        <small>Click anywhere on the timeline or drag the handle left/right to jump to that exact point in the fullscreen media.</small>
       </section>
 
       <section className="production-card">
