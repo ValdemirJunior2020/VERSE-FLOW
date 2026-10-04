@@ -130,8 +130,9 @@ export default function LyricsPage({songs,onSave,onAddToService,onLiveState,stat
     setRaw(importedText)
     setSlideIndex(0)
     setTab('edit')
+    if(importedText)await onSave(next)
     setBusy(false)
-    if(importedText)setNote('Lyrics were found on this source and loaded into the editor. Review them, then click Save Lyrics.')
+    if(importedText)setNote('Lyrics were found, loaded into the editor, and automatically saved to My Lyrics. Any edits can be saved again.')
     else if(redirectOnly)setNote('This result is a streaming/redirect page and does not contain lyric text. Go back and choose a lyric-page result, or paste/import lyrics here.')
     else setNote('Song selected, but this source did not provide importable lyric text. Paste/import the lyrics below or choose another result.')
   }
