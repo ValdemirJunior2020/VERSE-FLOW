@@ -162,6 +162,47 @@ function mpvSend(command,retries=10){
   })
 }
 
+function mpvRequest(command,retries=6){
+  return new Promise((resolve,reject)=>{
+    const attempt=(left)=>{
+      const socket=net.createConnection(MPV_PIPE)
+      let buffer=''
+      let settled=false
+      const finishError=(err)=>{
+        if(settled)return
+        settled=true
+        socket.destroy()
+        if(left>0)setTimeout(()=>attempt(left-1),120)
+        else reject(err)
+      }
+      socket.once('connect',()=>{
+        socket.write(JSON.stringify({command,request_id:Date.now()})+'\n')
+      })
+      socket.on('data',chunk=>{
+        buffer+=chunk.toString()
+        const lines=buffer.split(/\r?\n/)
+        buffer=lines.pop()||''
+        for(const line of lines){
+          if(!line.trim())continue
+          try{
+            const msg=JSON.parse(line)
+            if(Object.prototype.hasOwnProperty.call(msg,'error')){
+              settled=true
+              socket.end()
+              if(msg.error&&msg.error!=='success')reject(new Error(msg.error))
+              else resolve(msg)
+              return
+            }
+          }catch{}
+        }
+      })
+      socket.once('error',finishError)
+      socket.setTimeout(1800,()=>finishError(new Error('mpv IPC timeout')))
+    }
+    attempt(retries)
+  })
+}
+
 function launchMpv(app,file,screenIndex=0){
   const exe=toolPaths(app).mpv
   if(!exe) throw new Error('mpv is not installed. Open Production → Install / Update Open Source Tools.')
@@ -360,6 +401,22 @@ function registerProductionTools({app,ipcMain,shell,clipboard,getControlWindow})
       const map={pause:['cycle','pause'],stop:['quit'],seekBack:['seek',-10,'relative'],seekForward:['seek',10,'relative'],volume50:['set_property','volume',50],volume100:['set_property','volume',100]}
       if(!map[command])throw new Error('Unknown mpv command.')
       return await mpvSend(map[command])
+    }catch(e){return{ok:false,error:e.message}}
+  })
+  ipcMain.handle('mpv:status',async()=>{
+    try{
+      const [pos,duration,paused]=await Promise.all([
+        mpvRequest(['get_property','time-pos']),
+        mpvRequest(['get_property','duration']),
+        mpvRequest(['get_property','pause'])
+      ])
+      return{ok:true,position:Number(pos.data)||0,duration:Number(duration.data)||0,paused:Boolean(paused.data)}
+    }catch(e){return{ok:false,error:e.message}}
+  })
+  ipcMain.handle('mpv:seek-to',async(_e,seconds)=>{
+    try{
+      const value=Math.max(0,Number(seconds)||0)
+      return await mpvSend(['seek',value,'absolute','exact'])
     }catch(e){return{ok:false,error:e.message}}
   })
   ipcMain.handle('ffmpeg:probe',async(_e,file)=>{try{return{ok:true,summary:await ffprobe(app,file)}}catch(e){return{ok:false,error:e.message}}})
