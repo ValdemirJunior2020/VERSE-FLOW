@@ -52,6 +52,8 @@ contextBridge.exposeInMainWorld('verseflow', {
   downloadMediaUrl: (url) => ipcRenderer.invoke('media:download-url', url),
   mpvLaunch: (path, screenIndex) => ipcRenderer.invoke('mpv:launch', { path, screenIndex }),
   mpvCommand: (command) => ipcRenderer.invoke('mpv:command', command),
+  mpvStatus: () => ipcRenderer.invoke('mpv:status'),
+  mpvSeekTo: (seconds) => ipcRenderer.invoke('mpv:seek-to', seconds),
   ffmpegProbe: (path) => ipcRenderer.invoke('ffmpeg:probe', path),
   ffmpegCompatible: (path) => ipcRenderer.invoke('ffmpeg:compatible', path),
   whisperStart: (language) => ipcRenderer.invoke('whisper:start', language),
