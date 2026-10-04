@@ -405,6 +405,7 @@ function registerProductionTools({app,ipcMain,shell,clipboard,getControlWindow})
   })
   ipcMain.handle('mpv:status',async()=>{
     try{
+      if(!mpvProcess||mpvProcess.killed)return{ok:false,error:'mpv is not running'}
       const [pos,duration,paused]=await Promise.all([
         mpvRequest(['get_property','time-pos']),
         mpvRequest(['get_property','duration']),
@@ -415,6 +416,7 @@ function registerProductionTools({app,ipcMain,shell,clipboard,getControlWindow})
   })
   ipcMain.handle('mpv:seek-to',async(_e,seconds)=>{
     try{
+      if(!mpvProcess||mpvProcess.killed)return{ok:false,error:'mpv is not running'}
       const value=Math.max(0,Number(seconds)||0)
       return await mpvSend(['seek',value,'absolute','exact'])
     }catch(e){return{ok:false,error:e.message}}
