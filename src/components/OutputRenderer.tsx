@@ -26,10 +26,18 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
   const [now, setNow] = useState(new Date())
 
   useEffect(() => {
-    window.verseflow?.getPresentationState().then(s => s && setState(s))
-    return window.verseflow?.onPresentationState(s => {
-      if (!s.frozen) setState(s)
+    // Subscribe before fetching the snapshot so LIVE updates cannot be missed
+    // while the audience window is starting.
+    let active = true
+    const apply = (next: PresentationState | null | undefined) => {
+      if (!active || !next) return
+      setState(current => next.sequence >= current.sequence ? next : current)
+    }
+    const unsubscribe = window.verseflow?.onPresentationState(apply)
+    window.verseflow?.getPresentationState().then(apply).catch(error => {
+      console.error('Could not restore audience presentation:', error)
     })
+    return () => { active = false; unsubscribe?.() }
   }, [])
 
   useEffect(() => {
@@ -79,8 +87,10 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
   const align = state.theme.alignment || 'center'
   const audioNode=state.audio?.path?<audio ref={audioRef} src={mediaUrl(state.audio.path)} autoPlay />:null
   const solidOutput=state.backgroundType==='solid' || !state.backgroundType
-  const outputTextColor=solidOutput?'#000000':state.theme.textColor
-  const outputReferenceColor=solidOutput?'#000000':state.theme.accentColor
+  // Solid slides must always have readable contrast; transparent/media slides
+  // keep the operator's chosen colors.
+  const outputTextColor=solidOutput?'#111111':state.theme.textColor
+  const outputReferenceColor=solidOutput?'#6b4611':state.theme.accentColor
 
   if (stage) {
     return <div className="stage-output" data-no-translate="true">
