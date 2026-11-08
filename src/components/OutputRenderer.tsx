@@ -91,6 +91,13 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
   // keep the operator's chosen colors.
   const outputTextColor=solidOutput?'#111111':state.theme.textColor
   const outputReferenceColor=solidOutput?'#6b4611':state.theme.accentColor
+  const idle = state.mode === 'idle' && !state.text && !state.reference && !state.background
+  // A blank projector is dangerous in a live service. Show an unmistakable
+  // startup/connection screen until the operator actually sends a slide.
+  const fullScreenStyle: React.CSSProperties = {
+    position:'fixed', inset:0, width:'100vw', height:'100vh',
+    minWidth:'100vw', minHeight:'100vh', overflow:'hidden'
+  }
 
   if (stage) {
     return <div className="stage-output" data-no-translate="true">
@@ -121,10 +128,15 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
   if (state.logo) return <div className="audience-output logo-screen" data-no-translate="true">{audioNode}<div className="vf-logo-mark">VF</div><div>VERSEFLOW</div></div>
 
   return <div ref={outputRef} className="audience-output" data-no-translate="true" style={{
-    backgroundImage: state.backgroundType === 'image' && bg ? `linear-gradient(rgba(0,0,0,${state.theme.overlay}),rgba(0,0,0,${state.theme.overlay})), url("${bg}")` : undefined,
-    backgroundColor: state.backgroundType === 'solid' ? '#f7f0e4' : '#080808',
-    position:'relative'
+    ...fullScreenStyle,
+    backgroundImage: !idle && state.backgroundType === 'image' && bg ? `linear-gradient(rgba(0,0,0,${state.theme.overlay}),rgba(0,0,0,${state.theme.overlay})), url("${bg}")` : undefined,
+    backgroundColor: idle ? '#111827' : solidOutput ? '#f7f0e4' : '#080808'
   }}>
+    {idle && <div role="status" style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',gap:'18px',color:'#f0d18b',background:'#111827',fontFamily:'Arial, sans-serif',zIndex:10}}>
+      <div style={{fontSize:'clamp(40px,7vw,96px)',fontWeight:800,letterSpacing:'.1em'}}>VERSEFLOW</div>
+      <div style={{fontSize:'clamp(18px,2.3vw,34px)',color:'#f5f5f5'}}>Audience connected · Waiting for LIVE</div>
+      <div style={{fontSize:'clamp(14px,1.4vw,22px)',color:'#abb6c5'}}>Select a Bible verse and press LIVE on the operator screen.</div>
+    </div>}
     {audioNode}
     {state.backgroundType === 'video' && bg && <video ref={videoRef} className="audience-video" src={bg} autoPlay loop muted />}
     <div
