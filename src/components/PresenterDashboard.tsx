@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  BookOpen, ChevronRight, Circle, FolderOpen, Image as ImageIcon,
+  BookOpen, ChevronRight, Circle, FolderOpen,
   Images, ListMusic, Maximize2, Monitor, Music2, Play, Plus,
   Search, Settings2, Square, Video, Volume2, Zap
 } from 'lucide-react'
@@ -50,7 +50,7 @@ function readableVerse(verse: Verse) {
   return verse.translation.includes('STRONGS') ? cleanStrongMarkers(verse.text) : verse.text
 }
 
-function Slide({ value, placeholder = 'Select an item to preview' }: { value: PresentationState | null, placeholder?: string }) {
+function Slide({ value, placeholder = 'Select an item to preview', playVideo = false }: { value: PresentationState | null, placeholder?: string, playVideo?: boolean }) {
   const isSolid = !value?.backgroundType || value.backgroundType === 'solid'
   const hasImage = value?.backgroundType === 'image' && Boolean(value.background)
   const hasVideo = value?.backgroundType === 'video' && Boolean(value.background)
@@ -61,7 +61,7 @@ function Slide({ value, placeholder = 'Select an item to preview' }: { value: Pr
   return <div className={'pd-slide ' + (isSolid ? 'pd-slide-solid' : 'pd-slide-dark')} style={{
     backgroundImage: background ? 'linear-gradient(rgba(0,0,0,' + (value?.theme.overlay || 0) + '),rgba(0,0,0,' + (value?.theme.overlay || 0) + ')),url("' + background + '")' : undefined
   }}>
-    {hasVideo && <video className="pd-slide-video" src={mediaUrl(value?.background)} muted autoPlay loop playsInline />}
+    {hasVideo && (playVideo ? <video className="pd-slide-video" src={mediaUrl(value?.background)} muted autoPlay loop playsInline /> : <div className="pd-slide-video-poster"><Video size={25}/></div>)}
     {value?.black ? <span className="pd-slide-empty">BLACK SCREEN</span> :
       value?.logo ? <div className="pd-slide-logo">VERSEFLOW</div> :
       value?.youtubeId ? <div className="pd-slide-empty"><Video size={24}/> YouTube ready on audience output</div> :
@@ -198,7 +198,7 @@ export default function PresenterDashboard(props: Props) {
         {libraryTab === 'service' && <div className="pd-filterbar pd-service-filter"><strong>Service slides</strong><button onClick={() => props.onGo('playlists')}>EDIT PLAYLIST <ChevronRight size={13}/></button></div>}
         <div className="pd-editor-body">
           <div className="pd-preview-header"><span><span className="pd-preview-dot"/> PREVIEW</span><strong>{state.reference || state.title || 'No slide selected'}</strong><button className="pd-live-button" onClick={props.onGoLive}><Play size={13} fill="currentColor"/> SEND LIVE</button></div>
-          <div className="pd-preview-large"><Slide value={state}/></div>
+          <div className="pd-preview-large"><Slide value={state} playVideo/></div>
           <div className="pd-slide-list-heading"><span>{libraryTab === 'bible' ? 'BIBLE SLIDES' : libraryTab === 'songs' ? 'SONG SECTIONS' : 'SERVICE SLIDES'}</span><small>{libraryTab === 'bible' ? results.length : libraryTab === 'songs' ? songs.length : items.length} ITEMS</small></div>
           <div className="pd-thumbnail-grid">
             {libraryTab === 'bible' && (searching ? <div className="pd-help">Loading Bible verses…</div> : searchError ? <div className="pd-help">{searchError}</div> : results.length === 0 ? <div className="pd-help">No verses found. Check the reference and translation.</div> :
@@ -229,7 +229,7 @@ export default function PresenterDashboard(props: Props) {
 
       <aside className="pd-output pd-pane">
         <div className="pd-pane-title"><span><Monitor size={15}/> AUDIENCE</span><span className={'pd-live-indicator ' + (props.outputOpen ? 'connected' : '')}><Circle size={8} fill="currentColor"/>{props.outputOpen ? 'ON AIR' : 'OFFLINE'}</span></div>
-        <div className="pd-output-video"><Slide value={currentSlide} placeholder={props.outputConnected ? 'Audience ready · send a slide LIVE' : 'Connect a display in Settings'}/></div>
+        <div className="pd-output-video"><Slide value={currentSlide} playVideo placeholder={props.outputConnected ? 'Audience ready · send a slide LIVE' : 'Connect a display in Settings'}/></div>
         <div className="pd-output-caption"><strong>{currentSlide?.reference || currentSlide?.title || 'No live content'}</strong><small>{props.outputOpen ? 'Audience window is open' : 'Audience window is closed'}</small></div>
         <div className="pd-pane-title"><span><Zap size={15}/> LIVE CONTROLS</span></div>
         <div className="pd-quick-actions">
