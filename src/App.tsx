@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronLeft, ChevronRight, CirclePlus, Clock3, Images, Import, Monitor, Search, Undo2, WifiOff, Youtube, Zap, TimerReset, Type, SlidersHorizontal, Music2, ImagePlus, CheckCircle2, AlertTriangle } from 'lucide-react'
 import Nav from './components/Nav'
 import CanvasPreview from './components/CanvasPreview'
+import PresenterDashboard from './components/PresenterDashboard'
 import OutputRenderer from './components/OutputRenderer'
 import LanguageSwitcher from './components/LanguageSwitcher'
 import ProductionPage from './components/ProductionPage'
@@ -171,15 +172,6 @@ function Inspector({state,setState,themes,media=[],onPickMedia}:{state:Presentat
     <div className="safe-note">16:9 safe-area protection is always active on the live output.</div>
   </div>
 }
-
-function Dashboard({go,data}:{go:(m:ModuleKey)=>void;data:any}) {
-  return <div className="page dashboard">
-    <div className="hero-card"><div><span className="eyebrow">SUNDAY READY</span><h1>Your service. One clean flow.</h1><p>Build the service offline, preview every slide, then send only approved content to the audience screen.</p><div className="hero-actions"><button className="gold" onClick={()=>go('present')}>Open Live Desk</button><button onClick={()=>go('playlists')}>Build Service (optional)</button></div></div><div className="hero-orb">VF</div></div>
-    <div className="stats"><div><span>Bible verses</span><strong>{data.verseCount}</strong></div><div><span>Songs</span><strong>{data.songs.length}</strong></div><div><span>Media</span><strong>{data.media.length}</strong></div><div><span>Saved services</span><strong>{data.services.length}</strong></div></div>
-    <div className="feature-grid"><div><Zap/><h3>Live Scripture Flow</h3><p>Search, preview, send live, then move verse-by-verse with keyboard control.</p></div><div><Monitor/><h3>Cinematic Scripture Studio</h3><p>Optional motion and AI media tools stay separate from the reliable live engine.</p></div><div><ListMusicIcon/><h3>Sunday Service Builder</h3><p>Scripture, songs, announcements, images and videos in one ordered service.</p></div></div>
-  </div>
-}
-function ListMusicIcon(){return <span className="feature-icon">☷</span>}
 
 function BiblePage({verses,translations,onPreview,onAdd,onLive,onImport,onInstalled,state,setState,themes,items,media,onPickMedia}:{verses:Verse[];translations:BibleTranslation[];onPreview:(v:Verse)=>void;onAdd:(v:Verse)=>void;onLive:(v:Verse)=>void;onImport:()=>void;onInstalled:()=>void;state:PresentationState;setState:(s:PresentationState)=>void;themes:Theme[];items:ServiceItem[];media:MediaItem[];onPickMedia:()=>void}) {
   const [selected,setSelected]=useState<Verse|undefined>(verses[0])
@@ -945,7 +937,7 @@ export default function App() {
 
   if (loading) return <div className="boot-screen"><div className="brand-mark big">V</div><span>Loading VerseFlow…</span></div>
 
-  return <div className="app-shell">
+  return <div className={active === 'dashboard' ? 'app-shell console-active' : 'app-shell'}>
     <Nav active={active} onChange={setActive} controls={<div className="sidebar-quick-controls" aria-label="Live controls">
       <button className={`side-control side-color-1 ${state.black?'quick-active':''}`} onClick={()=>sendSafety({black:!state.black,logo:false})}>BLACK</button>
       <button className={`side-control side-color-2 ${state.logo?'quick-active':''}`} onClick={()=>sendSafety({logo:!state.logo,black:false})}>LOGO</button>
@@ -968,7 +960,24 @@ export default function App() {
     <main className="main-shell">
       <header className="topbar"><div className="global-search"><Search size={16}/><input value={globalQ} onChange={e=>setGlobalQ(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void globalSearch()}} placeholder="Search Bible, songs, media…"/></div><button onClick={newSlide}><CirclePlus size={16}/> New Slide</button><button onClick={globalImport}><Import size={16}/> Import</button><button title="Undo presentation change" onClick={undoPresentation}><Undo2 size={16}/></button><div className="top-spacer"/><LanguageSwitcher language={language} onChange={setLanguage}/><span className="offline"><WifiOff size={14}/> Offline-first</span><button className={`wall-health-badge ${audienceStatus?.connected?'connected':'disconnected'}`} onClick={()=>setActive('settings')} title="Configurar telão">{audienceStatus?.connected?<CheckCircle2 size={13}/>:<AlertTriangle size={13}/>} {audienceStatus?.connected?'TELÃO CONECTADO':'SEM TELÃO'}</button><button className={`system-health-badge ${systemHealth}`} onClick={()=>setActive('settings')} title="Open System Check">{systemHealth==='ok'?<CheckCircle2 size={13}/>:systemHealth==='warning'?<AlertTriangle size={13}/>:null}{systemHealth==='ok'?'SYSTEM OK':systemHealth==='warning'?'CHECK SYSTEM':'CHECKING'}</button><button className="present-top" onClick={()=>setActive('present')}><Monitor size={16}/> Present</button><span className={state.mode==='live'?'live-badge':'ready-badge'}>{state.mode==='live'?'LIVE':'READY'}</span><span className="clock"><Clock3 size={14}/>{new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</span></header>
       <div className="workspace">
-        {active==='dashboard'&&<Dashboard go={setActive} data={data}/>}
+        {active==='dashboard'&&<PresenterDashboard
+          data={data} items={items} index={index} state={state} liveState={lastLive.current}
+          outputConnected={Boolean(audienceStatus?.connected)} outputOpen={Boolean(audienceStatus?.openOnSelected)}
+          onGo={setActive} onGoLive={sendLive}
+          onPreviewVerse={previewVerse}
+          onLiveVerse={v=>{const p=itemToPresentation(verseToServiceItem(v),undefined,state.theme,state.sequence+1);void sendLiveState({...p,background:state.background,backgroundType:state.backgroundType,audio:state.audio,mode:'live'},'Versículo no TELÃO')}}
+          onAddVerse={v=>{const item=verseToServiceItem(v);addItem({...item,payload:{...item.payload,...atmospherePayload(state)}})}}
+          onPreviewSong={(song,at)=>{const sec=song.sections[at];if(!sec)return;setState(s=>({...s,mode:'preview',title:song.title,text:sec.lines.join('\n'),reference:sec.label,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false,sequence:s.sequence+1}))}}
+          onLiveSong={(song,at)=>{const sec=song.sections[at];if(!sec)return;const live:PresentationState={...state,mode:'live',title:song.title,text:sec.lines.join('\n'),reference:sec.label,layout:'center',youtubeId:undefined,black:false,logo:false,clearText:false,sequence:state.sequence+1};void sendLiveState(live,'Letra no TELÃO')}}
+          onSelectItem={previewItem} onLiveItem={liveAt}
+          onLoadService={list=>{setItems([...list]);setIndex(0);setState(s=>itemToPresentation(list[0],list[1],s.theme,s.sequence+1));setToast('Saved service loaded into the current playlist')}}
+          onPreviewMedia={m=>{if(m.type==='audio'){setState(s=>({...s,title:m.name,mode:'preview',audio:{path:m.path,playing:false,volume:.85,loop:false},sequence:s.sequence+1}));return}setState(s=>({...s,title:m.name,mode:'preview',text:'',reference:'',layout:'center',background:m.path,backgroundType:m.type==='video'?'video':'image',youtubeId:undefined,black:false,logo:false,clearText:false,sequence:s.sequence+1}))}}
+          onLiveMedia={m=>{const live:PresentationState=m.type==='audio'?{...state,mode:'live',title:m.name,audio:{path:m.path,playing:true,volume:.85,loop:false},sequence:state.sequence+1}:{...state,mode:'live',title:m.name,text:'',reference:'',layout:'center',background:m.path,backgroundType:m.type==='video'?'video':'image',youtubeId:undefined,audio:m.type==='video'?undefined:state.audio,black:false,logo:false,clearText:false,sequence:state.sequence+1};void sendLiveState(live,'Mídia no TELÃO')}}
+          onSetBackground={(src,type)=>{setState(s=>{const dark=['#2f3133','#111111','#000000'].includes(String(s.theme.textColor).toLowerCase());return {...s,background:src,backgroundType:type,youtubeId:undefined,black:false,logo:false,theme:{...s.theme,textColor:dark?'#fffaf0':s.theme.textColor},sequence:s.sequence+1}});setToast('Background applied to Preview')}}
+          onImportMedia={importMedia} onBlack={()=>sendSafety({black:!state.black,logo:false})}
+          onClear={()=>sendSafety({clearText:!state.clearText})}
+          onLogo={()=>sendSafety({logo:!state.logo,black:false})}
+        />}
         {active==='bible'&&<BiblePage verses={data.verses} translations={data.translations} onPreview={previewVerse} onAdd={v=>{const item=verseToServiceItem(v);addItem({...item,payload:{...item.payload,...atmospherePayload(state)}})}} onLive={liveVerse} onImport={async()=>{const r=await window.verseflow?.importBible();if(r?.ok){await reload();setToast(`${r.translation}: ${r.imported} verses imported`)}else if(r?.error!=='Canceled')setToast(r?.error||'Import failed')}} onInstalled={async()=>{await reload();setToast('Bible installed and ready offline')}} state={state} setState={setState} themes={themes} items={items} media={data.media} onPickMedia={importMedia}/>}
         {active==='lyrics'&&<LyricsPage songs={data.songs} onSave={saveSong} onAddToService={addEntireLyricsSong} onLiveState={next=>{void sendLiveState(next,'Lyrics on TELÃO')}} state={state} setState={setStateAndSync}/>}
         {active==='songs'&&<SongsPage songs={data.songs} onSave={saveSong} onAdd={addSong} onPreview={previewSong} onLive={liveSong} state={state} setState={setState} media={data.media} onPickMedia={importMedia}/>}
