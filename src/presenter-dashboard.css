@@ -176,3 +176,8 @@
   .pd-thumbnail-grid{grid-template-columns:repeat(auto-fill,minmax(136px,1fr))}
   .pd-output-video{min-height:82px}
 }
+
+/* The legacy full-page workspace adds padding for other screens; not for the console. */
+.console-active .workspace{height:100%;min-height:0;overflow:hidden;padding:0!important;scroll-padding-bottom:0!important}
+.console-active .sidebar{min-height:0;overflow-y:auto}
+.pd-slide-video-poster{position:absolute;inset:0;z-index:-1;display:flex;justify-content:center;align-items:center;color:#96a6bb;background:linear-gradient(145deg,#142132,#0c121e)}
