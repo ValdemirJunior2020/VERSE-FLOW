@@ -250,6 +250,6 @@ export default function PresenterDashboard(props: Props) {
           data.media.map(media => <div className={'pd-media-tile ' + (selectedMedia === media.id ? 'selected' : '')} key={media.id}><button className="pd-media-select" onClick={() => { setSelectedMedia(media.id); props.onPreviewMedia(media) }} title={'Preview ' + media.name}><span className={'pd-media-picture pd-media-' + media.type}>{media.type === 'image' ? <img loading="lazy" alt="" src={mediaUrl(media.path)}/> : media.type === 'video' ? <Video size={26}/> : <Volume2 size={26}/>}</span><span className="pd-media-name">{media.name}</span></button><div className="pd-media-hover"><button onClick={() => media.type === 'audio' ? props.onLiveMedia(media) : props.onSetBackground(media.path, media.type)}>{media.type === 'audio' ? 'PLAY' : 'BG'}</button><button onClick={() => props.onLiveMedia(media)}>LIVE</button></div></div>)}
       </div>
     </section>
-    <div className="pd-footer"><span><Circle size={7} fill="currentColor"/> OFFLINE BIBLE READY</span><span>Preview first. Live output changes only when you press LIVE.</span><span>{data.media.length} media · {data.services.length} saved services</span></div>
+    <div className="pd-footer"><span><Circle size={7} fill="currentColor"/> OFFLINE BIBLE READY</span><span>Preview slides safely · LIVE sends content · BLACK, CLEAR and LOGO act immediately.</span><span>{data.media.length} media · {data.services.length} saved services</span></div>
   </div>
 }
