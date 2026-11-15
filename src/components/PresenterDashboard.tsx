@@ -79,6 +79,10 @@ export default function PresenterDashboard(props: Props) {
   const [libraryTab, setLibraryTab] = useState<'bible' | 'songs' | 'service'>('bible')
   const [mediaTab, setMediaTab] = useState<'backgrounds' | 'media'>('backgrounds')
   const [reference, setReference] = useState('John 3:16')
+  const [bibleBooks, setBibleBooks] = useState<string[]>([])
+  const [bibleBook, setBibleBook] = useState('')
+  const [bibleChapters, setBibleChapters] = useState<number[]>([])
+  const [bibleChapter, setBibleChapter] = useState(1)
   const [songQuery, setSongQuery] = useState('')
   const [translation, setTranslation] = useState(() => {
     const saved = String(data.settings.defaultTranslation || '')
@@ -98,6 +102,28 @@ export default function PresenterDashboard(props: Props) {
       setTranslation(data.translations[0].code)
     }
   }, [data.translations, translation])
+
+  useEffect(() => {
+    let cancelled = false
+    if (!translation) return
+    void window.verseflow?.getBibleBooks(translation).then(books => {
+      if (cancelled) return
+      setBibleBooks(books || [])
+      setBibleBook(current => (books || []).includes(current) ? current : '')
+    }).catch(() => { if (!cancelled) setBibleBooks([]) })
+    return () => { cancelled = true }
+  }, [translation])
+
+  useEffect(() => {
+    let cancelled = false
+    if (!bibleBook || !translation) { setBibleChapters([]); return }
+    void window.verseflow?.getBibleChapters(translation, bibleBook).then(chapters => {
+      if (cancelled) return
+      setBibleChapters(chapters || [])
+      setBibleChapter(current => (chapters || []).includes(current) ? current : (chapters?.[0] || 1))
+    }).catch(() => { if (!cancelled) setBibleChapters([]) })
+    return () => { cancelled = true }
+  }, [translation, bibleBook])
 
   useEffect(() => {
     if (libraryTab !== 'bible') return
@@ -190,9 +216,24 @@ export default function PresenterDashboard(props: Props) {
           <span className="pd-editor-spacer"/>
           <button title="Open detailed editor" onClick={() => props.onGo(libraryTab === 'bible' ? 'bible' : libraryTab === 'songs' ? 'songs' : 'playlists')}><Maximize2 size={14}/></button>
         </div>
-        {libraryTab === 'bible' && <div className="pd-filterbar">
-          <label className="pd-ref-field"><Search size={14}/><input aria-label="Bible reference or keyword" value={reference} onChange={e => setReference(e.target.value)} placeholder="Search reference, e.g. Mark 1:25-26"/></label>
-          <select aria-label="Bible translation" value={translation} onChange={e => setTranslation(e.target.value)}>{data.translations.map(t => <option key={t.code} value={t.code}>{t.code}</option>)}</select>
+        {libraryTab === 'bible' && <div className="pd-bible-toolbar">
+          <div className="pd-scripture-lookup">
+            <span>Scripture Lookup</span>
+            <label className="pd-ref-field"><Search size={14}/><input aria-label="Bible reference or keyword" value={reference} onChange={e => setReference(e.target.value)} placeholder="Search scripture or reference"/></label>
+          </div>
+          <div className="pd-bible-controls">
+            <select aria-label="Bible translation" title="Bible translation" value={translation} onChange={e => setTranslation(e.target.value)}>{data.translations.map(t => <option key={t.code} value={t.code}>{t.name || t.code}</option>)}</select>
+            <select aria-label="Bible book" value={bibleBook} onChange={e => { setBibleBook(e.target.value); if (e.target.value) setReference(e.target.value + ' 1:1') }}>
+              <option value="">Book ▾</option>{bibleBooks.map(book => <option key={book} value={book}>{book}</option>)}
+            </select>
+            <select aria-label="Bible chapter" value={bibleChapter} disabled={!bibleBook || bibleChapters.length === 0} onChange={e => { const next = Number(e.target.value); setBibleChapter(next); setReference(bibleBook + ' ' + next + ':1') }}>
+              {bibleChapters.length === 0 ? <option value="1">Chapter ▾</option> : bibleChapters.map(chapter => <option key={chapter} value={chapter}>Chapter {chapter}</option>)}
+            </select>
+            <select aria-label="Bible verse" value="" disabled={!results.length} onChange={e => { const found = results.find(v => String(v.verse) === e.target.value); if (found) previewVerse(found) }}>
+              <option value="">Verse ▾</option>{results.map(v => <option key={v.id} value={v.verse}>{v.verse}</option>)}
+            </select>
+            <button className="pd-scripture-go" onClick={() => { if (results[0]) previewVerse(results[0]) }} disabled={!results.length}>PREVIEW</button>
+          </div>
         </div>}
         {libraryTab === 'songs' && <div className="pd-filterbar"><label className="pd-ref-field"><Search size={14}/><input aria-label="Search songs" value={songQuery} onChange={e => setSongQuery(e.target.value)} placeholder="Search your songs"/></label><button onClick={() => props.onGo('songs')}>MANAGE SONGS</button></div>}
         {libraryTab === 'service' && <div className="pd-filterbar pd-service-filter"><strong>Service slides</strong><button onClick={() => props.onGo('playlists')}>EDIT PLAYLIST <ChevronRight size={13}/></button></div>}
