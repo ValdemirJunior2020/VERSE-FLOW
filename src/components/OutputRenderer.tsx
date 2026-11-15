@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { PresentationState, Theme } from '../types'
 import { defaultTheme } from '../presentation'
 
@@ -24,6 +24,36 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
   const outputRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef(false)
   const [now, setNow] = useState(new Date())
+  const textAreaRef = useRef<HTMLDivElement>(null)
+  const fitTextRef = useRef<HTMLDivElement>(null)
+  const [fittedFontSize, setFittedFontSize] = useState(44)
+
+  // The nine physical TVs are one output canvas. Fit within the combined
+  // display's safe area, not within any single bezel/tile.
+  useLayoutEffect(() => {
+    if (stage || !state.text || state.clearText || state.layout === 'countdown') return
+    const area = textAreaRef.current
+    const textNode = fitTextRef.current
+    if (!area || !textNode) return
+    const fit = () => {
+      const maxSize = Math.max(12, Math.min(state.theme.fontSize || 48, area.clientHeight * 0.14, area.clientWidth * 0.075))
+      let low = 10, high = Math.max(10, maxSize)
+      // Binary search finds the largest text that fits both height and width.
+      for (let i = 0; i < 13; i++) {
+        const midpoint = (low + high) / 2
+        textNode.style.fontSize = midpoint + 'px'
+        if (textNode.scrollHeight <= area.clientHeight - 2 && textNode.scrollWidth <= area.clientWidth - 2) low = midpoint
+        else high = midpoint
+      }
+      textNode.style.fontSize = low + 'px'
+      setFittedFontSize(low)
+    }
+    fit()
+    const observer = new ResizeObserver(fit)
+    observer.observe(area)
+    document.fonts?.ready.then(fit).catch(() => {})
+    return () => observer.disconnect()
+  }, [stage, state.text, state.reference, state.theme.fontSize, state.theme.fontFamily, state.layout, state.clearText])
 
   useEffect(() => {
     // Subscribe before fetching the snapshot so LIVE updates cannot be missed
@@ -140,15 +170,16 @@ export default function OutputRenderer({ stage = false }: { stage?: boolean }) {
     {audioNode}
     {state.backgroundType === 'video' && bg && <video ref={videoRef} className="audience-video" src={bg} autoPlay loop muted />}
     <div
+      ref={textAreaRef}
       className={`audience-copy align-${align} layout-${state.layout||'center'}`}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={()=>{dragRef.current=false}}
       title="Drag to reposition Bible verses or lyrics"
-      style={{fontFamily: state.theme.fontFamily, color: outputTextColor,position:'absolute',left:`${positionX}%`,top:`${positionY}%`,transform:'translate(-50%,-50%)',width:'92%',cursor:state.layout==='countdown'?'default':'grab',touchAction:'none',userSelect:'none'}}>
+      style={{fontFamily: state.theme.fontFamily, color: outputTextColor,position:'absolute',left:`${positionX}%`,top:`${positionY}%`,transform:'translate(-50%,-50%)',width:'84%',maxHeight:'78vh',overflow:'hidden',cursor:state.layout==='countdown'?'default':'grab',touchAction:'none',userSelect:'none'}}>
       {state.layout==='countdown' ? <div className="audience-countdown"><span>{state.timerLabel||'Service starts in'}</span><strong>{(()=>{const sec=Math.max(0,Math.ceil(((state.timerEndAt||Date.now())-now.getTime())/1000));return `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`})()}</strong></div> : <>
-        {!state.clearText && <div className="audience-text" style={{fontSize: `${state.theme.fontSize}px`}}>{state.text}</div>}
+        {!state.clearText && <div ref={fitTextRef} className="audience-text" style={{fontSize: `${fittedFontSize}px`,overflowWrap:'anywhere',maxWidth:'100%'}}>{state.text}</div>}
         {!state.clearText && state.reference && <div className="audience-reference" style={{color: outputReferenceColor}}>{state.reference}</div>}
       </>}
     </div>
