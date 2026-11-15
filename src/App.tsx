@@ -964,6 +964,16 @@ export default function App() {
           data={data} items={items} index={index} state={state} liveState={lastLive.current}
           outputConnected={Boolean(audienceStatus?.connected)} outputOpen={Boolean(audienceStatus?.openOnSelected)}
           onGo={setActive} onGoLive={sendLive}
+          onTextSizeChange={size=>{
+            const base=state.mode==='live' ? state : lastLive.current
+            const theme={...state.theme,fontSize:size}
+            setState(current=>({...current,theme,sequence:current.sequence+1}))
+            if(base?.mode==='live'){
+              const live={...base,theme:{...base.theme,fontSize:size},sequence:Math.max(base.sequence,state.sequence)+2}
+              lastLive.current=live
+              window.verseflow?.sendPresentationState(live)
+            }
+          }}
           onPreviewVerse={previewVerse}
           onLiveVerse={v=>{const p=itemToPresentation(verseToServiceItem(v),undefined,state.theme,state.sequence+1);void sendLiveState({...p,background:state.background,backgroundType:state.backgroundType,audio:state.audio,mode:'live'},'Versículo no TELÃO')}}
           onAddVerse={v=>{const item=verseToServiceItem(v);addItem({...item,payload:{...item.payload,...atmospherePayload(state)}})}}
