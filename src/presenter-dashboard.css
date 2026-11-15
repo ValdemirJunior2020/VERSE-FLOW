@@ -224,3 +224,21 @@
 .pd-media-picture{height:auto;aspect-ratio:16/9}
 .pd-footer{background:#272727}
 @media(max-width:1100px){.pd-workspace{grid-template-columns:170px minmax(290px,1fr) 190px}.pd-bible-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.pd-scripture-go{grid-column:span 2}.pd-shell{grid-template-rows:50px minmax(0,1fr) minmax(175px,35%) 22px}}
+
+
+/* ProPresenter-style lyric slide browser: one selected song, numbered slides. */
+.pd-song-picker{display:flex;align-items:center;gap:4px;padding:5px 8px;min-height:37px;overflow-x:auto;flex-shrink:0;background:#333;border-bottom:1px solid #535353}
+.pd-song-picker>span{color:#b8b8b8;font-size:11px}
+.pd-shell .pd-song-picker button{white-space:nowrap;flex:0 0 auto;max-width:230px;overflow:hidden;text-overflow:ellipsis;background:#414141;color:#e5e5e5;border:1px solid #555;border-radius:2px;padding:5px 8px;font-size:11px;justify-content:flex-start}
+.pd-shell .pd-song-picker button.active{color:#fff;background:#2861a0;border-color:#5d99d8}
+.pd-lyric-thumbnail{border-color:#515151;background:#383838}
+.pd-lyric-thumbnail.selected{border-color:#ffb526}
+.pd-lyric-thumbnail .pd-thumb-surface{aspect-ratio:16/9;background:#100d1c}
+.pd-lyric-thumbnail .pd-thumb-surface .pd-slide-verse{font-size:clamp(10px,1vw,15px)!important;line-height:1.28;-webkit-line-clamp:5}
+.pd-lyric-thumbnail .pd-thumb-footer{background:#444}
+.pd-text-controls{background:#343434;border-block:1px solid #555;padding:8px 10px}
+.pd-text-heading{display:flex;justify-content:space-between;gap:8px;color:#e4e4e4;font-size:10px;font-weight:750}
+.pd-font-actions{display:flex;align-items:center;gap:4px;margin-top:5px}
+.pd-font-actions input{width:100%;min-width:0;flex:1;accent-color:#f2b13c}
+.pd-shell .pd-font-actions button{background:#505050;color:#fff;border:1px solid #737373;padding:5px 8px;min-width:34px}
+.pd-text-controls small{display:block;margin-top:4px;color:#bcbcbc;font-size:10px}
