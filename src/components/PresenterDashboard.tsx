@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { builtInBackgrounds } from '../backgrounds'
 import { cleanStrongMarkers, itemToPresentation } from '../presentation'
+import { lyricSlides } from '../lyrics'
 import type { AppData, MediaItem, ModuleKey, PresentationState, ServiceItem, Song, Verse } from '../types'
 import '../presenter-dashboard.css'
 
@@ -21,8 +22,8 @@ type Props = {
   onPreviewVerse: (verse: Verse) => void
   onLiveVerse: (verse: Verse) => void
   onAddVerse: (verse: Verse) => void
-  onPreviewSong: (song: Song, section: number) => void
-  onLiveSong: (song: Song, section: number) => void
+  onPreviewSong: (song: Song, section: number, lines?: string[]) => void
+  onLiveSong: (song: Song, section: number, lines?: string[]) => void
   onSelectItem: (index: number) => void
   onLiveItem: (index: number) => void
   onLoadService: (items: ServiceItem[]) => void
@@ -85,6 +86,7 @@ export default function PresenterDashboard(props: Props) {
   const [bibleChapters, setBibleChapters] = useState<number[]>([])
   const [bibleChapter, setBibleChapter] = useState(1)
   const [songQuery, setSongQuery] = useState('')
+  const [activeSongId, setActiveSongId] = useState<string | null>(null)
   const [translation, setTranslation] = useState(() => {
     const saved = String(data.settings.defaultTranslation || '')
     return data.translations.some(t => t.code === saved) ? saved :
@@ -169,7 +171,9 @@ export default function PresenterDashboard(props: Props) {
 
   const songs = useMemo(() => data.songs.filter(s => (s.title + ' ' + (s.author || '')).toLowerCase().includes(songQuery.toLowerCase())).slice(0, 30), [data.songs, songQuery])
   const previewVerse = (v: Verse) => { setSelectedVerse(v.translation + '/' + verseLabel(v)); props.onPreviewVerse(v) }
-  const previewSong = (song: Song, section: number) => { setSelectedSong(song.id + '/' + section); props.onPreviewSong(song, section) }
+  const currentSong = songs.find(song => song.id === activeSongId) || songs[0]
+  const songSlides = currentSong ? lyricSlides(currentSong, 4) : []
+  const previewSong = (song: Song, section: number, lines: string[], slideId: string) => { setActiveSongId(song.id); setSelectedSong(slideId); props.onPreviewSong(song, section, lines) }
   const currentSlide = props.liveState || (state.mode === 'live' ? state : null)
 
   return <div className="pd-shell">
@@ -236,12 +240,15 @@ export default function PresenterDashboard(props: Props) {
             <button className="pd-scripture-go" onClick={() => { if (results[0]) previewVerse(results[0]) }} disabled={!results.length}>PREVIEW</button>
           </div>
         </div>}
-        {libraryTab === 'songs' && <div className="pd-filterbar"><label className="pd-ref-field"><Search size={14}/><input aria-label="Search songs" value={songQuery} onChange={e => setSongQuery(e.target.value)} placeholder="Search your songs"/></label><button onClick={() => props.onGo('songs')}>MANAGE SONGS</button></div>}
+        {libraryTab === 'songs' && <>
+          <div className="pd-filterbar"><label className="pd-ref-field"><Search size={14}/><input aria-label="Search songs" value={songQuery} onChange={e => setSongQuery(e.target.value)} placeholder="Find a song in your lyrics library"/></label><button onClick={() => props.onGo('lyrics')}>EDIT LYRICS</button></div>
+          <div className="pd-song-picker" aria-label="Song library">{songs.length === 0 ? <span>No matching songs</span> : songs.map(song => <button key={song.id} className={currentSong?.id === song.id ? 'active' : ''} onClick={() => { setActiveSongId(song.id); setSelectedSong(null) }}><Music2 size={12}/>{song.title}</button>)}</div>
+        </>}
         {libraryTab === 'service' && <div className="pd-filterbar pd-service-filter"><strong>Service slides</strong><button onClick={() => props.onGo('playlists')}>EDIT PLAYLIST <ChevronRight size={13}/></button></div>}
         <div className="pd-editor-body">
           <div className="pd-preview-header"><span><span className="pd-preview-dot"/> PREVIEW</span><strong>{state.reference || state.title || 'No slide selected'}</strong><button className="pd-live-button" onClick={props.onGoLive}><Play size={13} fill="currentColor"/> SEND LIVE</button></div>
           <div className="pd-preview-large"><Slide value={state} playVideo/></div>
-          <div className="pd-slide-list-heading"><span>{libraryTab === 'bible' ? 'BIBLE SLIDES' : libraryTab === 'songs' ? 'SONG SECTIONS' : 'SERVICE SLIDES'}</span><small>{libraryTab === 'bible' ? results.length : libraryTab === 'songs' ? songs.length : items.length} ITEMS</small></div>
+          <div className="pd-slide-list-heading"><span>{libraryTab === 'bible' ? 'BIBLE SLIDES' : libraryTab === 'songs' ? 'LYRIC SLIDES' : 'SERVICE SLIDES'}</span><small>{libraryTab === 'bible' ? results.length : libraryTab === 'songs' ? songSlides.length : items.length} ITEMS</small></div>
           <div className="pd-thumbnail-grid">
             {libraryTab === 'bible' && (searching ? <div className="pd-help">Loading Bible verses…</div> : searchError ? <div className="pd-help">{searchError}</div> : results.length === 0 ? <div className="pd-help">No verses found. Check the reference and translation.</div> :
               results.map(v => {
@@ -253,14 +260,14 @@ export default function PresenterDashboard(props: Props) {
                   <div className="pd-thumb-footer"><span>{label}</span><button title="Add to service" onClick={() => props.onAddVerse(v)}><Plus size={13}/></button><button title={'Show ' + label + ' live'} onClick={() => props.onLiveVerse(v)}><Play size={13}/></button></div>
                 </div>
               }))}
-            {libraryTab === 'songs' && (songs.length === 0 ? <div className="pd-help">No songs found in your local library.</div> : songs.flatMap(song => song.sections.map((section, at) => {
-              const active = selectedSong === song.id + '/' + at
-              const mini = { ...state, title:song.title, text:section.lines.join('\n'), reference:section.label, black:false,logo:false,clearText:false,youtubeId:undefined,layout:'center' as const }
-              return <div className={'pd-thumbnail ' + (active ? 'selected' : '')} key={song.id + '-' + section.id}>
-                <button className="pd-thumb-surface" onClick={() => previewSong(song, at)} title={'Preview ' + song.title + ' ' + section.label}><Slide value={mini}/></button>
-                <div className="pd-thumb-footer"><span>{song.title} · {section.label}</span><button title="Show lyrics live" onClick={() => props.onLiveSong(song, at)}><Play size={13}/></button></div>
+            {libraryTab === 'songs' && (!currentSong ? <div className="pd-help">Select a song to see its lyrics slides.</div> : songSlides.map((slide, at) => {
+              const active = selectedSong === slide.id
+              const mini = { ...state, title: currentSong.title, text: slide.lines.join('\n'), reference: '', black:false,logo:false,clearText:false,youtubeId:undefined,layout:'center' as const }
+              return <div className={'pd-thumbnail pd-lyric-thumbnail ' + (active ? 'selected' : '')} key={slide.id}>
+                <button className="pd-thumb-surface" onClick={() => previewSong(currentSong, slide.sectionIndex, slide.lines, slide.id)} title={'Preview ' + currentSong.title + ' slide ' + (at + 1)}><Slide value={mini}/></button>
+                <div className="pd-thumb-footer"><span>{at + 1} · {slide.label}</span><button title={'Show slide ' + (at + 1) + ' live'} onClick={() => { setSelectedSong(slide.id); props.onLiveSong(currentSong, slide.sectionIndex, slide.lines) }}><Play size={13}/></button></div>
               </div>
-            })))}
+            }))}
             {libraryTab === 'service' && (items.length === 0 ? <div className="pd-help">Add Bible verses, songs, or media to start your service.</div> : items.map((item, at) => <div key={item.id} className={'pd-thumbnail ' + (index === at ? 'selected' : '')}>
               <button className="pd-thumb-surface" onClick={() => props.onSelectItem(at)}><Slide value={itemToPresentation(item, items[at + 1], state.theme, state.sequence)}/></button>
               <div className="pd-thumb-footer"><span>{at + 1}. {item.title}</span><button title="Send item live" onClick={() => props.onLiveItem(at)}><Play size={13}/></button></div>
