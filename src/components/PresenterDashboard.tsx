@@ -30,6 +30,7 @@ type Props = {
   onLiveMedia: (item: MediaItem) => void
   onSetBackground: (path: string, type: 'image' | 'video') => void
   onImportMedia: () => void
+  onTextSizeChange: (size: number) => void
   onGoLive: () => void
   onBlack: () => void
   onClear: () => void
@@ -272,6 +273,15 @@ export default function PresenterDashboard(props: Props) {
         <div className="pd-pane-title"><span><Monitor size={15}/> AUDIENCE</span><span className={'pd-live-indicator ' + (props.outputOpen ? 'connected' : '')}><Circle size={8} fill="currentColor"/>{props.outputOpen ? 'ON AIR' : 'OFFLINE'}</span></div>
         <div className="pd-output-video"><Slide value={currentSlide} playVideo placeholder={props.outputConnected ? 'Audience ready · send a slide LIVE' : 'Connect a display in Settings'}/></div>
         <div className="pd-output-caption"><strong>{currentSlide?.reference || currentSlide?.title || 'No live content'}</strong><small>{props.outputOpen ? 'Audience window is open' : 'Audience window is closed'}</small></div>
+        <div className="pd-text-controls">
+          <div className="pd-text-heading"><span>VIDEO WALL TEXT SIZE</span><strong>{state.theme.fontSize}px max</strong></div>
+          <div className="pd-font-actions">
+            <button aria-label="Decrease projected text size" onClick={() => props.onTextSizeChange(Math.max(16, state.theme.fontSize - 4))}>A−</button>
+            <input aria-label="Projected text size" type="range" min="16" max="90" step="2" value={Math.min(90, Math.max(16, state.theme.fontSize))} onChange={e => props.onTextSizeChange(Number(e.target.value))}/>
+            <button aria-label="Increase projected text size" onClick={() => props.onTextSizeChange(Math.min(90, state.theme.fontSize + 4))}>A+</button>
+          </div>
+          <small>Auto-fit ON · Keeps verses inside all 9 TVs</small>
+        </div>
         <div className="pd-pane-title"><span><Zap size={15}/> LIVE CONTROLS</span></div>
         <div className="pd-quick-actions">
           <button className="pd-quick-go" onClick={props.onGoLive}><Play size={16} fill="currentColor"/> GO LIVE</button>
